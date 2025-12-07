@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
@@ -34,6 +34,8 @@ interface ContestsCalendarProps {
 }
 
 export function ContestsCalendar({ events, loading, currentMonth }: ContestsCalendarProps) {
+    const [date, setDate] = useState(new Date());
+
     if (loading) {
         return (
             <div className="w-full h-[400px] sm:h-[500px] md:h-[520px] bg-gray-100 rounded-lg animate-pulse flex items-center justify-center">
@@ -49,6 +51,8 @@ export function ContestsCalendar({ events, loading, currentMonth }: ContestsCale
                 events={events}
                 startAccessor="start"
                 endAccessor="end"
+                date={date}
+                onNavigate={(newDate) => setDate(newDate)}
                 className="text-xs sm:text-sm"
                 style={{ height: 'clamp(400px, 60vh, 520px)', minWidth: 0 }}
                 popup
