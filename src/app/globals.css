@@ -24,3 +24,41 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Calendar Event Overflow Fix */
+.rbc-event {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.rbc-event-content {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.rbc-event-label {
+  display: none;
+}
+
+/* Responsive calendar cells */
+@media (max-width: 640px) {
+  .rbc-event {
+    padding: 1px 2px !important;
+    font-size: 0.65rem !important;
+  }
+  
+  .rbc-month-view .rbc-event {
+    padding: 0px 2px !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .rbc-event {
+    padding: 1px 3px !important;
+    font-size: 0.7rem !important;
+  }
+}
