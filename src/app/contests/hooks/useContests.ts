@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { isAfter, isSameDay } from 'date-fns';
+import { isAfter, isSameDay, isBefore, startOfDay } from 'date-fns';
 import { Contest, SUPPORTED_RESOURCES } from '../constants';
 
 export function useContests() {
@@ -31,7 +31,7 @@ export function useContests() {
         return () => clearInterval(interval);
     }, [fetchContests]);
 
-    const today = new Date();
+    const today = startOfDay(new Date());
 
     const filteredContests = useMemo(() => {
         return contests.filter((c) => {
@@ -57,6 +57,7 @@ export function useContests() {
         [filteredContests, today]
     );
 
+    // For sidebar - only upcoming contests
     const calendarEvents = useMemo(
         () =>
             upcomingContests.map((contest, idx) => ({
@@ -72,6 +73,33 @@ export function useContests() {
         [upcomingContests]
     );
 
+    // For calendar - all contests with color coding
+    const allCalendarEvents = useMemo(
+        () =>
+            filteredContests.map((contest, idx) => {
+                const contestStart = startOfDay(new Date(contest.start));
+                let bgColor = '#2563eb'; // Future - Blue
+
+                if (isBefore(contestStart, today)) {
+                    bgColor = '#9ca3af'; // Past - Gray
+                } else if (isSameDay(contestStart, today)) {
+                    bgColor = '#10b981'; // Today - Green
+                }
+
+                return {
+                    id: idx + 1,
+                    title: contest.event,
+                    start: new Date(contest.start),
+                    end: new Date(contest.end),
+                    resource: contest.resource,
+                    url: contest.href,
+                    allDay: false,
+                    bgColor,
+                };
+            }),
+        [filteredContests, today]
+    );
+
     return {
         contests,
         loading,
@@ -82,6 +110,7 @@ export function useContests() {
         setSelectedPlatforms,
         upcomingContests,
         calendarEvents,
+        allCalendarEvents,
         today,
     };
 }

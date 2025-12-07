@@ -13,8 +13,21 @@ const CLIST_RESOURCE_IDS = [
     'hackerearth.com',
 ];
 
+// Generate date range: start of current month to end of next month
+function getDateRange() {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 2, 0, 23, 59, 59);
+
+    return {
+        start: startOfMonth.toISOString(),
+        end: endOfNextMonth.toISOString(),
+    };
+}
+
+const dateRange = getDateRange();
 const CLIST_API_URL =
-    `https://clist.by/api/v3/contest/?upcoming=true&order_by=start&limit=100&resource__in=${CLIST_RESOURCE_IDS.join(',')}`;
+    `https://clist.by/api/v3/contest/?start__gte=${dateRange.start}&end__lte=${dateRange.end}&order_by=start&limit=200&resource__in=${CLIST_RESOURCE_IDS.join(',')}`;
 
 const SUPPORTED_RESOURCES = [
     'leetcode.com',
@@ -130,8 +143,11 @@ function normalizeResource(resource: string): string {
 
 function filterAndValidateContests(contests: Contest[]): Contest[] {
     const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 2, 0, 23, 59, 59);
 
     console.log('Filtering', contests.length, 'contests');
+    console.log('Date range:', startOfMonth.toISOString(), 'to', endOfNextMonth.toISOString());
 
     const filtered = contests.filter((c) => {
         // Validate required fields
@@ -160,11 +176,10 @@ function filterAndValidateContests(contests: Contest[]): Contest[] {
                 return false;
             }
 
-            // Include upcoming and live contests
-            const isUpcoming = start >= now;
-            const isLive = c.status === 'live' || (now >= start && now <= end);
+            // Include all contests within the date range (past, present, future)
+            const isInRange = start >= startOfMonth && end <= endOfNextMonth;
 
-            return isUpcoming || isLive;
+            return isInRange;
         } catch (error) {
             console.error('Error processing contest:', c.event, error);
             return false;
