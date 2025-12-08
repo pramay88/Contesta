@@ -1,88 +1,85 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { Contest } from '@/app/contests/constants';
-import { PlatformFilter } from './PlatformFilter';
 import { UpcomingList } from './UpcomingList';
+import { FilterTabs } from './FilterTabs';
+import { FiSearch } from 'react-icons/fi';
 
 interface ContestsSidebarProps {
     search: string;
     onSearchChange: (value: string) => void;
-    selectedPlatforms: string[];
-    onPlatformChange: (platform: string) => void;
     upcomingContests: Contest[];
     loading: boolean;
     error: string;
-    selectedDate?: Date | null;
-    onClearSelection?: () => void;
 }
 
 export function ContestsSidebar({
     search,
     onSearchChange,
-    selectedPlatforms,
-    onPlatformChange,
     upcomingContests,
     loading,
     error,
-    selectedDate,
-    onClearSelection,
 }: ContestsSidebarProps) {
+    const [currentFilter, setCurrentFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
+
+    // Filter logic relative to "now"
+    const filteredContests = upcomingContests.filter(contest => {
+        const start = new Date(contest.start);
+        const now = new Date();
+        const endOfToday = new Date(); endOfToday.setHours(23, 59, 59, 999);
+        const endOfWeek = new Date(); endOfWeek.setDate(now.getDate() + 7);
+        const endOfMonth = new Date(); endOfMonth.setMonth(now.getMonth() + 1);
+
+        switch (currentFilter) {
+            case 'today':
+                return start >= now && start <= endOfToday;
+            case 'week':
+                return start >= now && start <= endOfWeek;
+            case 'month':
+                return start >= now && start <= endOfMonth;
+            default:
+                return true;
+        }
+    });
+
     return (
-        <div className="bg-white rounded-lg shadow-md p-4 sm:p-5 flex flex-col gap-3 h-full">
-            <div className="mb-1">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Contests Calendar</h1>
-                <p className="text-xs sm:text-sm text-gray-600">Track coding contests across platforms</p>
+        <div className="flex flex-col gap-3 h-full">
+            {/* Search Bar */}
+            <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                    <FiSearch className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                    type="text"
+                    placeholder="Search contests..."
+                    className="block w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded-xl text-xs leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 shadow-sm"
+                    value={search}
+                    onChange={(e) => onSearchChange(e.target.value)}
+                />
             </div>
 
-            <input
-                type="text"
-                placeholder="Search Contests"
-                className="w-full p-2.5 sm:p-3 text-sm sm:text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-50"
-                value={search}
-                onChange={(e) => onSearchChange(e.target.value)}
-                disabled={loading}
-            />
+            {/* Filter Tabs */}
+            <div className="flex items-center gap-1.5">
+                <button className="bg-purple-600 text-white rounded-lg p-1.5 font-medium text-xs w-10 flex items-center justify-center shadow-sm">
+                    All
+                </button>
+                <div className="flex-1">
+                    <FilterTabs currentFilter={currentFilter} onFilterChange={setCurrentFilter} />
+                </div>
+            </div>
 
-            <PlatformFilter
-                selectedPlatforms={selectedPlatforms}
-                onPlatformChange={onPlatformChange}
-                isLoading={loading}
-            />
+            <div className="border-t border-gray-100 my-1"></div>
 
-            <div className="border-t pt-3">
-                {selectedDate ? (
-                    <div className="mb-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h2 className="text-sm sm:text-base font-bold text-blue-900">
-                                    {format(selectedDate, 'MMMM d, yyyy')}
-                                </h2>
-                                <p className="text-xs text-blue-700">
-                                    {upcomingContests.length} contest{upcomingContests.length !== 1 ? 's' : ''} on this date
-                                </p>
-                            </div>
-                            <button
-                                onClick={onClearSelection}
-                                className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-medium px-2 py-1 rounded hover:bg-blue-100 transition-colors"
-                            >
-                                Clear
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <>
-                        <h2 className="text-base sm:text-lg font-bold mb-1 text-gray-900">Upcoming Contests</h2>
-                        <p className="text-xs text-gray-500 mb-3">Don't miss scheduled events</p>
-                    </>
-                )}
+            <div className="flex items-center justify-between mb-1">
+                <h3 className="font-bold text-gray-900 text-sm">
+                    {currentFilter === 'all' ? 'Upcoming' :
+                        currentFilter === 'today' ? 'Today' :
+                            currentFilter === 'week' ? 'This Week' : 'This Month'}
+                </h3>
+            </div>
 
-                {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-600 text-xs sm:text-sm mb-3">
-                        {error}
-                    </div>
-                )}
-
-                <UpcomingList contests={upcomingContests} isLoading={loading} />
+            <div className="flex-1 min-h-0 relative overflow-y-auto">
+                <UpcomingList contests={filteredContests} isLoading={loading} />
             </div>
         </div>
     );

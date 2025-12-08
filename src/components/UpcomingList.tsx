@@ -31,14 +31,24 @@ export function UpcomingList({ contests, isLoading }: UpcomingListProps) {
 
     if (Object.keys(groupedContests).length === 0) {
         return (
-            <div className="text-center text-gray-400 py-8">
-                <p className="text-sm">No upcoming contests found</p>
+            <div className="flex flex-col items-center justify-center py-10 text-center text-gray-500">
+                <h2 className="text-base font-semibold text-gray-700">
+                    😌 Looks like you’ve got a chill one.
+                </h2>
+
+                <p className="text-sm mt-1 text-gray-500">
+                    No contests on this day.
+                </p>
             </div>
+
+
+
+
         );
     }
 
     return (
-        <div className="overflow-y-auto max-h-[60vh] md:max-h-[65vh] pr-1 sm:pr-2">
+        <div className="overflow-y-auto h-full pr-1 sm:pr-2">
             {Object.keys(groupedContests)
                 .sort()
                 .map((dateKey) => (
