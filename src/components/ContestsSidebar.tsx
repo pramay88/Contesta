@@ -43,7 +43,7 @@ export function ContestsSidebar({
     });
 
     return (
-        <div className="flex flex-col gap-3 h-full">
+        <div className="flex flex-col gap-3 h-[calc(100vh-220px)]">
             {/* Search Bar */}
             <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">

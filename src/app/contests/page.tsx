@@ -10,7 +10,11 @@ import { useContests } from './hooks/useContests';
 import { BsListUl, BsCalendar3, BsTrophy } from 'react-icons/bs';
 
 export default function ContestsPage() {
-    const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+    // Desktop: both can be shown, Mobile: only one
+    const [showCalendar, setShowCalendar] = useState(true);
+    const [showList, setShowList] = useState(true);
+    const [mobileView, setMobileView] = useState<'calendar' | 'list'>('calendar');
+
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -53,8 +57,16 @@ export default function ContestsPage() {
         }
     };
 
+    // Desktop toggle handlers
+    const toggleCalendar = () => setShowCalendar(!showCalendar);
+    const toggleList = () => setShowList(!showList);
+
+    // Mobile toggle handlers
+    const setMobileCalendar = () => setMobileView('calendar');
+    const setMobileList = () => setMobileView('list');
+
     return (
-        <div className="min-h-screen bg-gray-50 p-3 md:p-4 font-sans overflow-hidden">
+        <div className="min-h-screen bg-gray-50 p-3 md:p-4 font-sans overflow-x-hidden">
             {/* Header Area */}
             <div className="max-w-[1600px] mx-auto mb-3">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
@@ -69,11 +81,45 @@ export default function ContestsPage() {
                         </div>
                     </div>
 
+                    {/* Toggle Buttons */}
                     <div className="flex items-center gap-2">
-                        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-gray-700 text-sm shadow-sm hover:bg-gray-50 font-medium">
+                        {/* Desktop - Both can be selected */}
+                        <button
+                            onClick={toggleCalendar}
+                            className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-sm shadow-sm font-medium transition-all ${showCalendar
+                                    ? 'bg-blue-600 border-blue-600 text-white'
+                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                }`}
+                        >
                             <BsCalendar3 className="w-3.5 h-3.5" /> Calendar
                         </button>
-                        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-gray-700 text-sm shadow-sm hover:bg-gray-50 font-medium">
+                        <button
+                            onClick={toggleList}
+                            className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-sm shadow-sm font-medium transition-all ${showList
+                                    ? 'bg-blue-600 border-blue-600 text-white'
+                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                }`}
+                        >
+                            <BsListUl className="w-3.5 h-3.5" /> List
+                        </button>
+
+                        {/* Mobile - Only one can be selected */}
+                        <button
+                            onClick={setMobileCalendar}
+                            className={`lg:hidden flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-sm shadow-sm font-medium transition-all ${mobileView === 'calendar'
+                                    ? 'bg-blue-600 border-blue-600 text-white'
+                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                }`}
+                        >
+                            <BsCalendar3 className="w-3.5 h-3.5" /> Calendar
+                        </button>
+                        <button
+                            onClick={setMobileList}
+                            className={`lg:hidden flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-sm shadow-sm font-medium transition-all ${mobileView === 'list'
+                                    ? 'bg-blue-600 border-blue-600 text-white'
+                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                }`}
+                        >
                             <BsListUl className="w-3.5 h-3.5" /> List
                         </button>
                     </div>
@@ -97,29 +143,72 @@ export default function ContestsPage() {
                 </div>
             </div>
 
-            {/* Content Grid - Optimized for single page */}
-            <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-3 gap-3 h-[calc(100vh-180px)]">
-                {/* Calendar Section (Left, 2 cols) */}
-                <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-3 overflow-hidden">
-                    <ContestsCalendar
-                        events={allCalendarEvents}
-                        loading={loading}
-                        currentDate={currentDate}
-                        onNavigate={setCurrentDate}
-                        selectedDate={selectedDate}
-                        onSelectSlot={handleSelectSlot}
-                    />
-                </div>
+            {/* Content Grid */}
+            <div className="max-w-[1600px] mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                    {/* DESKTOP Calendar */}
+                    {showCalendar && (
+                        <div className={`hidden lg:block ${showCalendar && showList ? 'lg:col-span-2' : 'lg:col-span-3'
+                            }`}>
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
+                                <ContestsCalendar
+                                    events={allCalendarEvents}
+                                    loading={loading}
+                                    currentDate={currentDate}
+                                    onNavigate={setCurrentDate}
+                                    selectedDate={selectedDate}
+                                    onSelectSlot={handleSelectSlot}
+                                />
+                            </div>
+                        </div>
+                    )}
 
-                {/* Sidebar Section (Right, 1 col) */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 overflow-hidden">
-                    <ContestsSidebar
-                        search={search}
-                        onSearchChange={setSearch}
-                        upcomingContests={upcomingContests}
-                        loading={loading}
-                        error={error}
-                    />
+                    {/* DESKTOP Sidebar */}
+                    {showList && (
+                        <div className={`hidden lg:block ${showCalendar && showList ? 'lg:col-span-1' : 'lg:col-span-3'
+                            }`}>
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 overflow-hidden">
+                                <ContestsSidebar
+                                    search={search}
+                                    onSearchChange={setSearch}
+                                    upcomingContests={upcomingContests}
+                                    loading={loading}
+                                    error={error}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MOBILE Calendar */}
+                    {mobileView === 'calendar' && (
+                        <div className="block lg:hidden col-span-1">
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
+                                <ContestsCalendar
+                                    events={allCalendarEvents}
+                                    loading={loading}
+                                    currentDate={currentDate}
+                                    onNavigate={setCurrentDate}
+                                    selectedDate={selectedDate}
+                                    onSelectSlot={handleSelectSlot}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MOBILE Sidebar */}
+                    {mobileView === 'list' && (
+                        <div className="block lg:hidden col-span-1">
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 overflow-hidden">
+                                <ContestsSidebar
+                                    search={search}
+                                    onSearchChange={setSearch}
+                                    upcomingContests={upcomingContests}
+                                    loading={loading}
+                                    error={error}
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
