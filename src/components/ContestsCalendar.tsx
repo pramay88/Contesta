@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { PlatformIcon } from './PlatformIcon';
 
 interface CalendarViewProps {
     events: Array<{
@@ -160,22 +161,22 @@ export function ContestsCalendar({
                                 key={index}
                                 onClick={() => handleDayClick(day)}
                                 className={`min-h-24 p-2 rounded-lg border cursor-pointer transition-all ${selected
-                                        ? 'ring-2 ring-purple-500 bg-purple-50 border-purple-200'
-                                        : today
-                                            ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-200'
-                                            : currentMonth
-                                                ? 'bg-white border-gray-200 hover:bg-gray-50'
-                                                : 'bg-gray-50 border-gray-100'
+                                    ? 'ring-2 ring-purple-500 bg-purple-50 border-purple-200'
+                                    : today
+                                        ? 'ring-2 ring-green-500 bg-green-50 border-green-200'
+                                        : currentMonth
+                                            ? 'bg-white border-gray-200 hover:bg-gray-50'
+                                            : 'bg-gray-50 border-gray-100'
                                     }`}
                             >
                                 <div
                                     className={`text-sm font-medium mb-1 ${today
-                                            ? 'w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs'
-                                            : selected
-                                                ? 'w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-xs'
-                                                : currentMonth
-                                                    ? 'text-gray-900'
-                                                    : 'text-gray-400'
+                                        ? 'w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs'
+                                        : selected
+                                            ? 'w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-xs'
+                                            : currentMonth
+                                                ? 'text-gray-900'
+                                                : 'text-gray-400'
                                         }`}
                                 >
                                     {day.getDate()}
@@ -188,11 +189,12 @@ export function ContestsCalendar({
                                                 e.stopPropagation();
                                                 if (event.url) window.open(event.url, '_blank');
                                             }}
-                                            className="text-xs px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 transition-opacity"
+                                            className="text-xs px-1.5 py-0.5 rounded cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1"
                                             style={{ backgroundColor: event.bgColor, color: '#fff' }}
                                             title={event.title}
                                         >
-                                            {event.title}
+                                            <PlatformIcon resource={event.resource} className="w-2.5 h-2.5 flex-shrink-0" />
+                                            <span className="truncate">{event.title}</span>
                                         </div>
                                     ))}
                                     {dayEvents.length > 2 && (

@@ -22,7 +22,7 @@ export function FilterTabs({ currentFilter, onFilterChange }: FilterTabsProps) {
                     className={`
                         flex-1 text-xs font-medium py-1 px-2 rounded-md transition-all
                         ${currentFilter === tab.id
-                            ? 'bg-purple-600 text-white shadow-sm'
+                            ? 'bg-orange-600 text-white shadow-sm'
                             : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900'
                         }
                     `}

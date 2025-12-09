@@ -70,7 +70,7 @@ export default function ContestsPage() {
         <div className="min-h-screen bg-gray-50 p-3 md:p-4 font-sans overflow-x-hidden">
             {/* Header Area */}
             <div className="max-w-[1600px] mx-auto mb-3">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
+                <div className="flex items-center justify-between gap-3 mb-3">
                     <div className="flex items-center gap-2.5">
                         {/* Logo */}
                         <div className="bg-gradient-to-br from-green-500 to-blue-500 p-2 rounded-lg shadow-md">
@@ -78,7 +78,7 @@ export default function ContestsPage() {
                         </div>
                         <div>
                             <h1 className="text-xl font-bold text-gray-900 tracking-tight">Contesta.io</h1>
-                            <p className="text-gray-500 text-xs">All contests in one place</p>
+                            <p className="text-gray-500 text-xs hidden sm:block">All contests in one place</p>
                         </div>
                     </div>
 

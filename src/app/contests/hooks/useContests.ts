@@ -78,12 +78,12 @@ export function useContests() {
         () =>
             filteredContests.map((contest, idx) => {
                 const contestStart = startOfDay(new Date(contest.start));
-                let bgColor = '#2563eb'; // Future - Blue
+                let bgColor = '#6f95c8d2'; // Future - Light Blue (blue-400)
 
                 if (isBefore(contestStart, today)) {
-                    bgColor = '#9ca3af'; // Past - Gray
+                    bgColor = '#d1d5db'; // Past - Light Gray (gray-300)
                 } else if (isSameDay(contestStart, today)) {
-                    bgColor = '#10b981'; // Today - Green
+                    bgColor = '#34d399'; // Today - Light Green (green-400)
                 }
 
                 return {

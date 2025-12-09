@@ -43,7 +43,7 @@ export function ContestsSidebar({
     });
 
     return (
-        <div className="flex flex-col gap-3 h-[calc(100vh-220px)]">
+        <div className="flex flex-col gap-3 h-[calc(100vh-100px)]">
             {/* Search Bar */}
             <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
@@ -60,9 +60,7 @@ export function ContestsSidebar({
 
             {/* Filter Tabs */}
             <div className="flex items-center gap-1.5">
-                <button className="bg-purple-600 text-white rounded-lg p-1.5 font-medium text-xs w-10 flex items-center justify-center shadow-sm">
-                    All
-                </button>
+
                 <div className="flex-1">
                     <FilterTabs currentFilter={currentFilter} onFilterChange={setCurrentFilter} />
                 </div>
