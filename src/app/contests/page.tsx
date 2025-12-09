@@ -87,8 +87,8 @@ export default function ContestsPage() {
                         <button
                             onClick={toggleCalendar}
                             className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-sm shadow-sm font-medium transition-all ${showCalendar
-                                    ? 'bg-blue-600 border-blue-600 text-white'
-                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                ? 'bg-blue-600 border-blue-600 text-white'
+                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
                                 }`}
                         >
                             <BsCalendar3 className="w-3.5 h-3.5" /> Calendar
@@ -96,8 +96,8 @@ export default function ContestsPage() {
                         <button
                             onClick={toggleList}
                             className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-sm shadow-sm font-medium transition-all ${showList
-                                    ? 'bg-blue-600 border-blue-600 text-white'
-                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                ? 'bg-blue-600 border-blue-600 text-white'
+                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
                                 }`}
                         >
                             <BsListUl className="w-3.5 h-3.5" /> List
@@ -106,21 +106,21 @@ export default function ContestsPage() {
                         {/* Mobile - Only one can be selected */}
                         <button
                             onClick={setMobileCalendar}
-                            className={`lg:hidden flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-sm shadow-sm font-medium transition-all ${mobileView === 'calendar'
-                                    ? 'bg-blue-600 border-blue-600 text-white'
-                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                            className={`lg:hidden flex items-center justify-center px-2.5 py-1.5 border rounded-lg text-sm shadow-sm font-medium transition-all ${mobileView === 'calendar'
+                                ? 'bg-blue-600 border-blue-600 text-white'
+                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
                                 }`}
                         >
-                            <BsCalendar3 className="w-3.5 h-3.5" /> Calendar
+                            <BsCalendar3 className="w-4 h-4" />
                         </button>
                         <button
                             onClick={setMobileList}
-                            className={`lg:hidden flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-sm shadow-sm font-medium transition-all ${mobileView === 'list'
-                                    ? 'bg-blue-600 border-blue-600 text-white'
-                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                            className={`lg:hidden flex items-center justify-center px-2.5 py-1.5 border rounded-lg text-sm shadow-sm font-medium transition-all ${mobileView === 'list'
+                                ? 'bg-blue-600 border-blue-600 text-white'
+                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
                                 }`}
                         >
-                            <BsListUl className="w-3.5 h-3.5" /> List
+                            <BsListUl className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
