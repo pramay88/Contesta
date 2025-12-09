@@ -7,7 +7,8 @@ import { ContestsCalendar } from '@/components/contestsCalendar';
 import { StatsHeader } from '@/components/StatsHeader';
 import { PlatformFilter } from '@/components/PlatformFilter';
 import { useContests } from './hooks/useContests';
-import { BsListUl, BsCalendar3, BsTrophy } from 'react-icons/bs';
+import { BsListUl, BsCalendar3 } from 'react-icons/bs';
+import { ContestaLogo } from '@/components/ContestaLogo';
 
 export default function ContestsPage() {
     // Desktop: both can be shown, Mobile: only one
@@ -72,12 +73,12 @@ export default function ContestsPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
                     <div className="flex items-center gap-2.5">
                         {/* Logo */}
-                        <div className="bg-gradient-to-br from-purple-600 to-blue-600 p-2 rounded-lg shadow-md">
-                            <BsTrophy className="w-5 h-5 text-white" />
+                        <div className="bg-gradient-to-br from-green-500 to-blue-500 p-2 rounded-lg shadow-md">
+                            <ContestaLogo className="w-5 h-5" />
                         </div>
                         <div>
                             <h1 className="text-xl font-bold text-gray-900 tracking-tight">Contesta.io</h1>
-                            <p className="text-gray-500 text-xs">All coding contests in one place</p>
+                            <p className="text-gray-500 text-xs">All contests in one place</p>
                         </div>
                     </div>
 
