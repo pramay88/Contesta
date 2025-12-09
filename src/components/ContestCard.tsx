@@ -16,6 +16,7 @@ const platformColors: Record<string, { bg: string; text: string; lightBg: string
     atcoder: { bg: 'bg-gray-700', text: 'text-gray-700', lightBg: 'bg-gray-50' },
     hackerrank: { bg: 'bg-green-600', text: 'text-green-700', lightBg: 'bg-green-50' },
     topcoder: { bg: 'bg-red-500', text: 'text-red-700', lightBg: 'bg-red-50' },
+    kaggle: { bg: 'bg-cyan-500', text: 'text-cyan-700', lightBg: 'bg-cyan-50' },
 };
 
 // Helper function to format date for calendar exports

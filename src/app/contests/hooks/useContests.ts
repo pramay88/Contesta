@@ -2,18 +2,25 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { isAfter, isSameDay, isBefore, startOfDay } from 'date-fns';
 import { Contest, SUPPORTED_RESOURCES } from '../constants';
 
-export function useContests() {
+export function useContests(currentDate?: Date) {
     const [contests, setContests] = useState<Contest[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [search, setSearch] = useState('');
     const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
 
-    const fetchContests = useCallback(async () => {
+    const fetchContests = useCallback(async (date?: Date) => {
         setLoading(true);
         setError('');
         try {
-            const res = await fetch('/api/contests');
+            const targetDate = date || new Date();
+            const month = targetDate.getMonth() + 1; // Convert to 1-indexed
+            const year = targetDate.getFullYear();
+
+            const url = `/api/contests?month=${month}&year=${year}`;
+            console.log('Fetching contests from:', url);
+
+            const res = await fetch(url);
             if (!res.ok) throw new Error('Failed to fetch contests');
             const data = await res.json();
             setContests(data.contests || []);
@@ -26,10 +33,8 @@ export function useContests() {
     }, []);
 
     useEffect(() => {
-        fetchContests();
-        const interval = setInterval(fetchContests, 5 * 60 * 1000);
-        return () => clearInterval(interval);
-    }, [fetchContests]);
+        fetchContests(currentDate);
+    }, [fetchContests, currentDate]);
 
     const today = startOfDay(new Date());
 

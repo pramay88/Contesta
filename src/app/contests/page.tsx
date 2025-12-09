@@ -29,7 +29,7 @@ export default function ContestsPage() {
         upcomingContests,
         allCalendarEvents,
         today,
-    } = useContests();
+    } = useContests(currentDate);
 
     // Stats Logic
     const todayCount = upcomingContests.filter(c => {

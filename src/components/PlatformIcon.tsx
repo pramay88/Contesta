@@ -6,8 +6,10 @@ import {
     SiHackerrank,
     SiGeeksforgeeks,
     SiHackerearth,
+    SiKaggle,
+    SiTopcoder,
 } from 'react-icons/si';
-import { FaUserGraduate } from 'react-icons/fa6';
+import { FaUserGraduate, FaCode } from 'react-icons/fa6';
 
 // Simple inline AtCoder icon instead of separate file
 function AtCoderIcon({ className = 'w-5 h-5' }: { className?: string }) {
@@ -60,7 +62,11 @@ export function PlatformIcon({ resource, className = 'w-5 h-5' }: PlatformIconPr
     if (r === 'interviewbit.com')
         return <FaUserGraduate className={`${className} text-indigo-600`} />;
     if (r === 'codingninjas.com')
-        return <img src="/codestudio.svg" alt="CodeStudio" className={className} />;
+        return <FaCode className={`${className} text-orange-600`} />;
+    if (r === 'kaggle.com')
+        return <SiKaggle className={`${className} text-cyan-500`} />;
+    if (r === 'topcoder.com')
+        return <SiTopcoder className={`${className} text-red-600`} />;
     if (r === 'atcoder.jp') return <AtCoderIcon className={className} />;
 
     return null;

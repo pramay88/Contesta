@@ -11,23 +11,9 @@ const CLIST_RESOURCE_IDS = [
     'atcoder.jp',
     'hackerrank.com',
     'hackerearth.com',
+    'kaggle.com',
+    'topcoder.com',
 ];
-
-// Generate date range: start of current month to end of next month
-function getDateRange() {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 2, 0, 23, 59, 59);
-
-    return {
-        start: startOfMonth.toISOString(),
-        end: endOfNextMonth.toISOString(),
-    };
-}
-
-const dateRange = getDateRange();
-const CLIST_API_URL =
-    `https://clist.by/api/v3/contest/?start__gte=${dateRange.start}&end__lte=${dateRange.end}&order_by=start&limit=200&resource__in=${CLIST_RESOURCE_IDS.join(',')}`;
 
 const SUPPORTED_RESOURCES = [
     'leetcode.com',
@@ -35,6 +21,8 @@ const SUPPORTED_RESOURCES = [
     'codechef.com',
     'geeksforgeeks.org',
     'atcoder.jp',
+    'kaggle.com',
+    'topcoder.com',
     'hackerrank.com',
     'hackerearth.com',
     'interviewbit.com',
@@ -50,14 +38,38 @@ interface Contest {
     status?: string;
 }
 
-async function fetchClistContests(): Promise<Contest[]> {
+// Generate date range based on month and year
+function getDateRange(month?: number, year?: number) {
+    const now = new Date();
+    const targetMonth = month !== undefined ? month : now.getMonth();
+    const targetYear = year !== undefined ? year : now.getFullYear();
+
+    // Start from beginning of target month
+    const startOfMonth = new Date(targetYear, targetMonth, 1);
+    // End at end of target month
+    const endOfMonth = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59);
+
+    return {
+        start: startOfMonth.toISOString(),
+        end: endOfMonth.toISOString(),
+    };
+}
+
+async function fetchClistContests(month?: number, year?: number): Promise<Contest[]> {
     if (!CLIST_API_USERNAME || !CLIST_API_KEY) {
         console.error('CLIST API credentials are not set');
         return [];
     }
 
+    const dateRange = getDateRange(month, year);
+
+    // Use API v4 with proper date filtering
+    const apiUrl = `https://clist.by:443/api/v4/contest/?limit=500&start__gt=${dateRange.start}&end__lt=${dateRange.end}&order_by=start&resource__in=${CLIST_RESOURCE_IDS.join(',')}`;
+
+    console.log('Fetching from Clist API:', apiUrl);
+
     try {
-        const res = await fetch(CLIST_API_URL, {
+        const res = await fetch(apiUrl, {
             headers: {
                 Authorization: `ApiKey ${CLIST_API_USERNAME}:${CLIST_API_KEY}`,
             },
@@ -74,7 +86,7 @@ async function fetchClistContests(): Promise<Contest[]> {
 
         // Log unique resources for debugging
         const uniqueResources = [...new Set(data.objects?.map((c: any) => c.resource) || [])];
-        console.log('Unique resources from Clist:', uniqueResources.slice(0, 20));
+        console.log('Unique resources from Clist:', uniqueResources);
 
         return (data.objects || []).map((c: any) => ({
             event: c.event || '',
@@ -137,29 +149,29 @@ function normalizeResource(resource: string): string {
     if (normalized.includes('hackerearth')) return 'hackerearth.com';
     if (normalized.includes('interviewbit')) return 'interviewbit.com';
     if (normalized.includes('codingninjas') || normalized.includes('codestudio')) return 'codingninjas.com';
+    if (normalized.includes('kaggle')) return 'kaggle.com';
+    if (normalized.includes('topcoder')) return 'topcoder.com';
 
     return normalized;
 }
 
-function filterAndValidateContests(contests: Contest[]): Contest[] {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 2, 0, 23, 59, 59);
+function filterAndValidateContests(contests: Contest[], month?: number, year?: number): Contest[] {
+    const dateRange = getDateRange(month, year);
+    const startOfMonth = new Date(dateRange.start);
+    const endOfMonth = new Date(dateRange.end);
 
     console.log('Filtering', contests.length, 'contests');
-    console.log('Date range:', startOfMonth.toISOString(), 'to', endOfNextMonth.toISOString());
+    console.log('Date range:', startOfMonth.toISOString(), 'to', endOfMonth.toISOString());
 
     const filtered = contests.filter((c) => {
         // Validate required fields
         if (!c.event || !c.start || !c.end || !c.resource) {
-            console.log('Skipping contest due to missing fields:', c.event);
             return false;
         }
 
         // Normalize and check if resource is supported
         const normalizedResource = normalizeResource(c.resource);
         if (!SUPPORTED_RESOURCES.includes(normalizedResource)) {
-            console.log('Skipping unsupported resource:', c.resource, '(normalized:', normalizedResource + ')');
             return false;
         }
 
@@ -172,12 +184,11 @@ function filterAndValidateContests(contests: Contest[]): Contest[] {
 
             // Validate dates
             if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-                console.log('Invalid dates for contest:', c.event);
                 return false;
             }
 
-            // Include all contests within the date range (past, present, future)
-            const isInRange = start >= startOfMonth && end <= endOfNextMonth;
+            // Include contests that overlap with the month
+            const isInRange = start <= endOfMonth && end >= startOfMonth;
 
             return isInRange;
         } catch (error) {
@@ -200,11 +211,19 @@ function filterAndValidateContests(contests: Contest[]): Contest[] {
 
 export async function GET(request: NextRequest) {
     try {
-        console.log('Fetching contests...');
+        // Get month and year from query parameters
+        const searchParams = request.nextUrl.searchParams;
+        const monthParam = searchParams.get('month');
+        const yearParam = searchParams.get('year');
+
+        const month = monthParam ? parseInt(monthParam) - 1 : undefined; // Convert to 0-indexed
+        const year = yearParam ? parseInt(yearParam) : undefined;
+
+        console.log('Fetching contests for month:', month !== undefined ? month + 1 : 'current', 'year:', year || 'current');
 
         // Fetch contests in parallel
         const [clistContests, gfgContests] = await Promise.all([
-            fetchClistContests(),
+            fetchClistContests(month, year),
             fetchGfgContests(),
         ]);
 
@@ -212,7 +231,7 @@ export async function GET(request: NextRequest) {
 
         // Merge and filter
         const merged = [...clistContests, ...gfgContests];
-        const filtered = filterAndValidateContests(merged);
+        const filtered = filterAndValidateContests(merged, month, year);
 
         // Sort by start time
         const sorted = filtered.sort(
