@@ -1,71 +1,22 @@
-import React from 'react';
-import { Calendar, dateFnsLocalizer, ToolbarProps } from 'react-big-calendar';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { format, parse, startOfWeek, getDay } from 'date-fns';
-import { enUS } from 'date-fns/locale/en-US';
-import { CalendarEvent } from './CalendarEvent';
-import { BsChevronLeft, BsChevronRight } from 'react-icons/bs';
+import { useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-const locales = { 'en-US': enUS };
-const localizer = dateFnsLocalizer({
-    format,
-    parse,
-    startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 0 }),
-    getDay,
-    locales,
-});
-
-interface CalendarEventData {
-    id: number;
-    title: string;
-    start: Date;
-    end: Date;
-    resource: string;
-    url: string;
-    allDay: boolean;
-    bgColor: string;
-}
-
-interface ContestsCalendarProps {
-    events: CalendarEventData[];
+interface CalendarViewProps {
+    events: Array<{
+        id: number;
+        title: string;
+        start: Date;
+        end: Date;
+        resource: string;
+        url: string;
+        bgColor: string;
+    }>;
     loading: boolean;
     currentDate: Date;
     onNavigate: (date: Date) => void;
     selectedDate?: Date | null;
     onSelectSlot?: (slotInfo: { start: Date; end: Date }) => void;
 }
-
-// Custom Toolbar
-const CustomToolbar = (toolbar: ToolbarProps) => {
-    const goToBack = () => {
-        toolbar.onNavigate('PREV');
-    };
-    const goToNext = () => {
-        toolbar.onNavigate('NEXT');
-    };
-
-    return (
-        <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-lg font-semibold text-gray-800">
-                {format(toolbar.date, 'MMMM yyyy')}
-            </h2>
-            <div className="flex items-center gap-1.5">
-                <button
-                    onClick={goToBack}
-                    className="p-1.5 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
-                >
-                    <BsChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                    onClick={goToNext}
-                    className="p-1.5 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
-                >
-                    <BsChevronRight className="w-4 h-4" />
-                </button>
-            </div>
-        </div>
-    );
-};
 
 export function ContestsCalendar({
     events,
@@ -74,7 +25,7 @@ export function ContestsCalendar({
     onNavigate,
     selectedDate,
     onSelectSlot
-}: ContestsCalendarProps) {
+}: CalendarViewProps) {
     if (loading) {
         return (
             <div className="w-full h-[500px] bg-gray-50 rounded-xl animate-pulse flex items-center justify-center">
@@ -83,95 +34,184 @@ export function ContestsCalendar({
         );
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const startDate = new Date(monthStart);
+    startDate.setDate(startDate.getDate() - startDate.getDay());
+    const endDate = new Date(monthEnd);
+    endDate.setDate(endDate.getDate() + (6 - monthEnd.getDay()));
+
+    const days = [];
+    const current = new Date(startDate);
+    while (current <= endDate) {
+        days.push(new Date(current));
+        current.setDate(current.getDate() + 1);
+    }
+
+    const weeks = [];
+    for (let i = 0; i < days.length; i += 7) {
+        weeks.push(days.slice(i, i + 7));
+    }
+
+    const getEventsForDay = (date: Date) => {
+        const dayStart = new Date(date);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(date);
+        dayEnd.setHours(23, 59, 59, 999);
+
+        return events.filter(event => {
+            const eventStart = new Date(event.start);
+            return eventStart >= dayStart && eventStart <= dayEnd;
+        });
+    };
+
+    const previousMonth = () => {
+        onNavigate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
+    };
+
+    const nextMonth = () => {
+        onNavigate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
+    };
+
+    const isToday = (date: Date) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const checkDate = new Date(date);
+        checkDate.setHours(0, 0, 0, 0);
+        return checkDate.getTime() === today.getTime();
+    };
+
+    const isSelected = (date: Date) => {
+        if (!selectedDate) return false;
+        const selected = new Date(selectedDate);
+        selected.setHours(0, 0, 0, 0);
+        const checkDate = new Date(date);
+        checkDate.setHours(0, 0, 0, 0);
+        return checkDate.getTime() === selected.getTime();
+    };
+
+    const isCurrentMonth = (date: Date) => {
+        return date.getMonth() === currentDate.getMonth();
+    };
+
+    const handleDayClick = (date: Date) => {
+        if (onSelectSlot) {
+            const dayStart = new Date(date);
+            dayStart.setHours(0, 0, 0, 0);
+            const dayEnd = new Date(date);
+            dayEnd.setHours(23, 59, 59, 999);
+            onSelectSlot({ start: dayStart, end: dayEnd });
+        }
+    };
+
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     return (
-        <div className="w-full h-full bg-white relative p-2">
-            <style>{`
-                .rbc-calendar { font-family: inherit; }
-                .rbc-month-view { border: none; }
-                .rbc-header {
-                    border-bottom: none;
-                    text-transform: uppercase;
-                    font-size: 0.75rem;
-                    font-weight: 500;
-                    color: #6b7280;
-                    padding-bottom: 10px;
-                }
-                .rbc-day-bg { border-left: none; }
-                .rbc-off-range-bg { background: transparent; }
-                .rbc-month-row { border-top: none; min-height: 100px; }
-                .rbc-date-cell { 
-                    padding: 8px; 
-                    font-size: 0.875rem; 
-                    color: #374151;
-                    font-weight: 500;
-                }
-                .rbc-day-bg + .rbc-day-bg { border-left: 1px solid #f3f4f6; } /* Vertical dividers */
-                .rbc-month-row + .rbc-month-row { border-top: 1px solid #f3f4f6; } /* Horizontal dividers */
-                .rbc-today { background-color: transparent; } /* Handle today via prop getter for custom look */
-            `}</style>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-full">
+            <div className="p-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                        {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+                    </h2>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={previousMonth}
+                            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                            aria-label="Previous month"
+                        >
+                            <ChevronLeft className="w-5 h-5 text-gray-600" />
+                        </button>
+                        <button
+                            onClick={nextMonth}
+                            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                            aria-label="Next month"
+                        >
+                            <ChevronRight className="w-5 h-5 text-gray-600" />
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-            <Calendar
-                localizer={localizer}
-                events={events}
-                startAccessor="start"
-                endAccessor="end"
-                date={currentDate}
-                onNavigate={onNavigate}
-                selectable
-                onSelectSlot={onSelectSlot}
-                className="font-sans"
-                style={{ height: 'calc(100vh - 220px)', maxHeight: 550 }}
-                views={['month']}
-                defaultView="month"
-                components={{
-                    event: CalendarEvent,
-                    toolbar: CustomToolbar,
-                }}
-                dayPropGetter={(date: Date) => {
-                    const dateOnly = new Date(date);
-                    dateOnly.setHours(0, 0, 0, 0);
+            <div className="p-3">
+                {/* Day names header */}
+                <div className="grid grid-cols-7 gap-2 mb-2">
+                    {dayNames.map(day => (
+                        <div key={day} className="text-center text-gray-600 text-xs font-medium uppercase py-2">
+                            {day}
+                        </div>
+                    ))}
+                </div>
 
-                    const isToday = dateOnly.getTime() === today.getTime();
-                    const isSelected = selectedDate &&
-                        new Date(selectedDate.setHours(0, 0, 0, 0)).getTime() === dateOnly.getTime();
+                {/* Calendar grid */}
+                <div className="grid grid-cols-7 gap-2">
+                    {days.map((day, index) => {
+                        const dayEvents = getEventsForDay(day);
+                        const today = isToday(day);
+                        const selected = isSelected(day);
+                        const currentMonth = isCurrentMonth(day);
 
-                    const style: React.CSSProperties = {
-                        backgroundColor: 'white',
-                        margin: '4px',
-                        borderRadius: '12px',
-                        border: '1px solid #f3f4f6', // Light gray border for all
-                    };
+                        return (
+                            <div
+                                key={index}
+                                onClick={() => handleDayClick(day)}
+                                className={`min-h-24 p-2 rounded-lg border cursor-pointer transition-all ${selected
+                                        ? 'ring-2 ring-purple-500 bg-purple-50 border-purple-200'
+                                        : today
+                                            ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-200'
+                                            : currentMonth
+                                                ? 'bg-white border-gray-200 hover:bg-gray-50'
+                                                : 'bg-gray-50 border-gray-100'
+                                    }`}
+                            >
+                                <div
+                                    className={`text-sm font-medium mb-1 ${today
+                                            ? 'w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs'
+                                            : selected
+                                                ? 'w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-xs'
+                                                : currentMonth
+                                                    ? 'text-gray-900'
+                                                    : 'text-gray-400'
+                                        }`}
+                                >
+                                    {day.getDate()}
+                                </div>
+                                <div className="space-y-1">
+                                    {dayEvents.slice(0, 2).map(event => (
+                                        <div
+                                            key={event.id}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (event.url) window.open(event.url, '_blank');
+                                            }}
+                                            className="text-xs px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 transition-opacity"
+                                            style={{ backgroundColor: event.bgColor, color: '#fff' }}
+                                            title={event.title}
+                                        >
+                                            {event.title}
+                                        </div>
+                                    ))}
+                                    {dayEvents.length > 2 && (
+                                        <div className="text-xs text-gray-500 px-1.5">
+                                            +{dayEvents.length - 2} more
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
 
-                    if (isSelected) {
-                        style.border = '2px solid #8b5cf6'; // Purple Focus
-                        style.backgroundColor = '#f5f3ff';
-                    } else if (isToday) {
-                        style.border = '2px solid #3b82f6'; // Blue Today
-                        style.backgroundColor = '#eff6ff';
-                    }
-
-                    return { style };
-                }}
-                eventPropGetter={(event: any) => ({
-                    style: {
-                        backgroundColor: event.bgColor,
-                        color: event.resource.toLowerCase().includes('leetcode') ? '#fff' : '#fff', // Adjust contrast if needed
-                        fontSize: '0.7rem',
-                        borderRadius: '4px',
-                        border: 'none',
-                        padding: '2px 4px',
-                        marginBottom: '2px',
-                        display: 'block',
-                        opacity: 0.9,
-                    },
-                })}
-                onSelectEvent={(event: any) => {
-                    if (event.url) window.open(event.url, '_blank');
-                }}
-            />
+            {events.length === 0 && (
+                <div className="p-12 text-center text-gray-500">
+                    No contests found
+                </div>
+            )}
         </div>
     );
 }
