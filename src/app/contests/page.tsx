@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { ContestsSidebar } from '@/components/ContestsSidebar';
-import { ContestsCalendar } from '@/components/contestsCalendar';
+import { ContestsCalendar } from '@/components/ContestsCalendar';
 import { StatsHeader } from '@/components/StatsHeader';
 import { PlatformFilter } from '@/components/PlatformFilter';
 import { useContests } from './hooks/useContests';
