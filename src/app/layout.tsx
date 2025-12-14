@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import { Analytics } from "@vercel/analytics/react";
+
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -13,8 +16,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Contesta.io - All Coding Contests in One Place",
+  title: "Contesta.io - Discover upcoming contests across platforms",
   description: "Track and manage coding contests from CodeForces, LeetCode, CodeChef, AtCoder, and more. Never miss a contest with our unified calendar and notifications.",
+  icons: {
+    icon: "/logo.svg",
+  }
 };
 
 export default function RootLayout({
@@ -28,6 +34,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );
