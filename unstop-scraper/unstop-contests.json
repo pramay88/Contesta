@@ -1,0 +1,167 @@
+{
+  "contests": [
+    {
+      "event": "National Geo-AI Challenge 2025",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/national-geo-ai-challenge-2025-iit-bombay-1608532",
+      "dateText": "Dec 11, 2025  1 day left  131 Registered"
+    },
+    {
+      "event": "Pulse Quest",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/pulse-quest-elan-nvision-2026-iit-hyderabad-1607792",
+      "dateText": "Dec 11, 2025  14  days left  142 Registered"
+    },
+    {
+      "event": "GitGrade Hackathon",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/gitgrade-hackathon-unsaidtalks-education-1607938",
+      "dateText": "Dec 10, 2025  2  days left  532 Registered"
+    },
+    {
+      "event": "CodeCrafter by IgniteX 2.0",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/codecrafter-by-ignitex-20-ignitex-20-by-international-management-institute-imi-kolkata-international-manageme-1607852",
+      "dateText": "Dec 10, 2025  19  days left  26 Registered"
+    },
+    {
+      "event": "Apertre 3.0",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/apertre-30-resourcio-community-1597907",
+      "dateText": "Dec 10, 2025  24  days left  253 Registered"
+    },
+    {
+      "event": "Dev Duel",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/dev-duel-elan-nvision-2026-iit-hyderabad-1599873",
+      "dateText": "Dec 10, 2025  9  days left  82 Registered"
+    },
+    {
+      "event": "Innov-AI-tion",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/innov-ai-tion-elan-nvision-2026-iit-hyderabad-1599891",
+      "dateText": "Dec 10, 2025  9  days left  48 Registered"
+    },
+    {
+      "event": "Blockchain Hackathon",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/blockchain-hackathon-elan-nvision-2026-iit-hyderabad-1600399",
+      "dateText": "Dec 10, 2025  14  days left  36 Registered"
+    },
+    {
+      "event": "Enigma CTF",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/enigma-ctf-elan-nvision-2026-iit-hyderabad-1600393",
+      "dateText": "Dec 10, 2025  9  days left  13 Registered"
+    },
+    {
+      "event": "Game Jam",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/game-jam-elan-nvision-2026-iit-hyderabad-1599888",
+      "dateText": "Dec 10, 2025  14  days left  1 Registered"
+    },
+    {
+      "event": "Code-A-Thon 2.0",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/code-a-thon-20-datta-meghe-college-of-engineering-dmce-navi-mumbai-1600879",
+      "dateText": "Dec 9, 2025  1 month left  600 Registered"
+    },
+    {
+      "event": "Robotrix 2026",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/robotrix-2026-nitk-surathkal-1607123",
+      "dateText": "Dec 9, 2025  7  days left  104 Registered"
+    },
+    {
+      "event": "Mysti Code – Decode Debug",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/msystic-code-decode-debug-pragati-engineering-college-pec-surampalem-1607149",
+      "dateText": "Dec 8, 2025  25  days left  394 Registered"
+    },
+    {
+      "event": "Open Source Competition (ECWoC)",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/open-source-competition-ecwoc-jb-institute-of-engineering-and-technology-1607096",
+      "dateText": "Dec 8, 2025  10  days left  250 Registered"
+    },
+    {
+      "event": "Manthan 1.0",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/manthan-10--1605635",
+      "dateText": "Dec 8, 2025  20  days left  97 Registered"
+    },
+    {
+      "event": "HireVerse 2.0",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/hireverse-20-centre-for-development-of-intellectual-property-and-research-1606687",
+      "dateText": "Dec 8, 2025  5  days left  15 Registered"
+    },
+    {
+      "event": "Logic League",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/logic-league-atma-ram-sanatan-dharma-college-arsd-du-new-delhi-1606867",
+      "dateText": "Dec 8, 2025  2  days left  199 Registered"
+    },
+    {
+      "event": "InnovAItion - Shaping Future Innovators",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/innovaition-shaping-future-innovators-dhirubhai-ambani-institute-of-information-and-communication-technology--1604506",
+      "dateText": "Dec 7, 2025  14  days left  255 Registered"
+    },
+    {
+      "event": "Uhack 4.0",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/uhack-40-uhack-40-united-college-of-engineering-and-research-ucer-allahabad-1603878",
+      "dateText": "Dec 7, 2025  24  days left  30 Registered"
+    },
+    {
+      "event": "Quant Insider Market Making Challenge",
+      "start": "2025-12-11T18:21:54.481Z",
+      "end": "2026-01-10T18:21:54.481Z",
+      "resource": "unstop.com",
+      "href": "https://unstop.com/hackathons/quant-insider-market-making-challengeuat-live-edition-fintech-club-iit-ism-dhanbad-1606533",
+      "dateText": "Dec 7, 2025  11  days left  162 Registered"
+    }
+  ],
+  "lastUpdated": "2025-12-11T18:21:54.481Z",
+  "source": "https://unstop.com/hackathons?oppstatus=open&usertype=students&domain=2&course=6&specialization=Computer%20Science%20and%20Engineering&passingOutYear=2027",
+  "note": "Update this file periodically to keep contests fresh"
+}

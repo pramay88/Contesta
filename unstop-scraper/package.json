@@ -1,0 +1,22 @@
+{
+    "name": "unstop-scraper",
+    "version": "1.0.0",
+    "description": "Scraper for Unstop hackathons and competitions",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "scrape": "node index.js",
+        "test": "node index.js"
+    },
+    "keywords": [
+        "unstop",
+        "scraper",
+        "hackathons"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "cheerio": "^1.0.0-rc.12",
+        "node-fetch": "^3.3.2"
+    }
+}
