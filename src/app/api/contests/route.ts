@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 const CLIST_API_USERNAME = process.env.CLIST_API_USERNAME || '';
 const CLIST_API_KEY = process.env.CLIST_API_KEY || '';
 
+// In-memory cache to prevent contests from disappearing on reload
+let cachedContests: Contest[] = [];
+let lastFetchTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in ms
+
 // Request specific resources from Clist API
 const CLIST_RESOURCE_IDS = [
     'leetcode.com',
@@ -66,7 +71,7 @@ async function fetchClistContests(month?: number, year?: number): Promise<Contes
     // Use API v4 with proper date filtering
     const apiUrl = `https://clist.by:443/api/v4/contest/?limit=500&start__gt=${dateRange.start}&end__lt=${dateRange.end}&order_by=start&resource__in=${CLIST_RESOURCE_IDS.join(',')}`;
 
-    console.log('Fetching from Clist API:', apiUrl);
+    // console.log('Fetching from Clist API:', apiUrl);
 
     try {
         const res = await fetch(apiUrl, {
@@ -219,7 +224,34 @@ export async function GET(request: NextRequest) {
         const month = monthParam ? parseInt(monthParam) - 1 : undefined; // Convert to 0-indexed
         const year = yearParam ? parseInt(yearParam) : undefined;
 
-        console.log('Fetching contests for month:', month !== undefined ? month + 1 : 'current', 'year:', year || 'current');
+        const now = Date.now();
+        const cacheValid = now - lastFetchTime < CACHE_DURATION && cachedContests.length > 0;
+
+        // Return cached data if still valid
+        if (cacheValid) {
+            console.log(`📦 Serving ${cachedContests.length} contests from cache (${Math.floor((now - lastFetchTime) / 1000)}s old)`);
+
+            // Still filter by month/year if requested
+            const filtered = month !== undefined || year !== undefined
+                ? filterAndValidateContests(cachedContests, month, year)
+                : cachedContests;
+
+            return NextResponse.json(
+                {
+                    contests: filtered,
+                    cached: true,
+                    cacheAge: Math.floor((now - lastFetchTime) / 1000)
+                },
+                {
+                    headers: {
+                        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+        }
+
+        console.log('✨ Fetching fresh contests for month:', month !== undefined ? month + 1 : 'current', 'year:', year || 'current');
 
         // Fetch contests in parallel
         const [clistContests, gfgContests] = await Promise.all([
@@ -238,10 +270,18 @@ export async function GET(request: NextRequest) {
             (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
         );
 
-        console.log('Returning', sorted.length, 'contests');
+        // Update cache
+        cachedContests = sorted;
+        lastFetchTime = now;
+
+        console.log('Returning', sorted.length, 'contests (cache updated)');
 
         return NextResponse.json(
-            { contests: sorted },
+            {
+                contests: sorted,
+                cached: false,
+                timestamp: new Date().toISOString()
+            },
             {
                 headers: {
                     'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
@@ -251,6 +291,26 @@ export async function GET(request: NextRequest) {
         );
     } catch (error) {
         console.error('API error:', error);
+
+        // Return cached data if available, even if stale
+        if (cachedContests.length > 0) {
+            console.log('⚠️ Error occurred, returning stale cache with', cachedContests.length, 'contests');
+            return NextResponse.json(
+                {
+                    contests: cachedContests,
+                    cached: true,
+                    stale: true,
+                    error: 'Fresh data unavailable, serving cached data'
+                },
+                {
+                    headers: {
+                        'Cache-Control': 'public, s-maxage=60',
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+        }
+
         return NextResponse.json(
             { error: 'Failed to fetch contests', details: error instanceof Error ? error.message : 'Unknown error' },
             { status: 500 }
