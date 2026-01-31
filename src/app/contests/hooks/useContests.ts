@@ -86,7 +86,7 @@ export function useContests(currentDate?: Date) {
                 let bgColor = '#6f95c8d2'; // Future - Light Blue (blue-400)
 
                 if (isBefore(contestStart, today)) {
-                    bgColor = '#b2bcccff'; // Past - Light Gray (gray-300)
+                    bgColor = '#d1d5db'; // Past - Light Gray (gray-300)
                 } else if (isSameDay(contestStart, today)) {
                     bgColor = '#34d399'; // Today - Light Green (green-400)
                 }

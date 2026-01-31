@@ -52,7 +52,7 @@ export function ContestsSidebar({
                 <input
                     type="text"
                     placeholder="Search contests..."
-                    className="block w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded-xl text-xs text-gray-600 font-medium leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 shadow-sm"
+                    className="block w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded-xl text-xs leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 shadow-sm"
                     value={search}
                     onChange={(e) => onSearchChange(e.target.value)}
                 />
