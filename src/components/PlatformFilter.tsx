@@ -5,30 +5,6 @@ import { BsChevronDown, BsX, BsCheck } from 'react-icons/bs';
 
 interface PlatformFilterProps {
     selectedPlatforms: string[];
-    onPlatformChange: (platform: string) => void; // Keeping signature but will handle multi-select logic internally or request prop change if needed. 
-    // Wait, the parent expects single platform string?
-    // Looking at ContestsPage.tsx usage: `onPlatformChange={(p) => setSelectedPlatforms(p ? [p] : [])}`.
-    // The previous implementation was single select.
-    // The new design implies multi-select.
-    // I need to update the prop signature to accept string[] or change logic to support multi-select update.
-    // Let's change the prop to `onSelectionChange: (platforms: string[]) => void` efficiently.
-    // For now, I'll adapt to existing signature or better, change the component to handle the array update logic and pass it up.
-    // Actually, I can just overload or genericize, but let's see. Parent `setSelectedPlatforms` is passed.
-    // I should probably update the parent to handle multi-select logic properly if it doesn't already.
-    // In `page.tsx`: 
-    // `const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);` 
-    // The hook `useContests` had `selectedPlatforms` and `setSelectedPlatforms`.
-    // So multi-select IS supported by the state, but the previous UI was single select.
-
-    // I will modify the prop to be `onUpdate: (platforms: string[]) => void`.
-    // But to minimize breakage, I will check the usage.
-    // The usage in `page.tsx` was: `onPlatformChange={(p) => setSelectedPlatforms(p ? [p] : [])}`
-    // This forced single select. I should update `page.tsx` as well to verify it works.
-}
-
-// Updated props for multi-select
-interface NewPlatformFilterProps {
-    selectedPlatforms: string[];
     onPlatformChange: (platforms: string[]) => void;
     isLoading: boolean;
 }
@@ -37,7 +13,7 @@ export function PlatformFilter({
     selectedPlatforms,
     onPlatformChange,
     isLoading,
-}: NewPlatformFilterProps) {
+}: PlatformFilterProps) {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -106,7 +82,7 @@ export function PlatformFilter({
                                         key={value}
                                         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white border border-gray-200 shadow-sm text-gray-700"
                                     >
-                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div> {/* Dot indicator, simplified color */}
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                                         {option?.label}
                                         <button
                                             onClick={(e) => removePlatform(value, e)}

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { PlatformIcon } from './PlatformIcon';
 
@@ -47,11 +46,6 @@ export function ContestsCalendar({
     while (current <= endDate) {
         days.push(new Date(current));
         current.setDate(current.getDate() + 1);
-    }
-
-    const weeks = [];
-    for (let i = 0; i < days.length; i += 7) {
-        weeks.push(days.slice(i, i + 7));
     }
 
     const getEventsForDay = (date: Date) => {
@@ -209,7 +203,8 @@ export function ContestsCalendar({
                 </div>
             </div>
 
-            {events.length === 0 && (
+            {/* Only show empty state when NOT loading and truly empty */}
+            {!loading && events.length === 0 && (
                 <div className="p-12 text-center text-gray-500">
                     No contests found
                 </div>

@@ -1,16 +1,26 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { isAfter, isSameDay, isBefore, startOfDay } from 'date-fns';
 import { Contest, SUPPORTED_RESOURCES } from '../constants';
 
 export function useContests(currentDate?: Date) {
     const [contests, setContests] = useState<Contest[]>([]);
+    // `loading` is true only on the very first fetch (no data yet)
     const [loading, setLoading] = useState(true);
+    // `isFetching` is true whenever a fetch is in-flight (including re-fetches)
+    const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState('');
     const [search, setSearch] = useState('');
     const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
 
+    // Track whether we have ever successfully loaded data
+    const hasData = useRef(false);
+
     const fetchContests = useCallback(async (date?: Date) => {
-        setLoading(true);
+        // Only show the full skeleton on the very first load
+        if (!hasData.current) {
+            setLoading(true);
+        }
+        setIsFetching(true);
         setError('');
         try {
             const targetDate = date || new Date();
@@ -24,11 +34,17 @@ export function useContests(currentDate?: Date) {
             if (!res.ok) throw new Error('Failed to fetch contests');
             const data = await res.json();
             setContests(data.contests || []);
-        } catch (err: any) {
-            setError(err.message || 'Failed to fetch contests');
-            setContests([]);
+            hasData.current = true;
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Failed to fetch contests';
+            setError(message);
+            // Only clear displayed data if we have nothing to show
+            if (!hasData.current) {
+                setContests([]);
+            }
         } finally {
             setLoading(false);
+            setIsFetching(false);
         }
     }, []);
 
@@ -62,33 +78,17 @@ export function useContests(currentDate?: Date) {
         [filteredContests, today]
     );
 
-    // For sidebar - only upcoming contests
-    const calendarEvents = useMemo(
-        () =>
-            upcomingContests.map((contest, idx) => ({
-                id: idx + 1,
-                title: contest.event,
-                start: new Date(contest.start),
-                end: new Date(contest.end),
-                resource: contest.resource,
-                url: contest.href,
-                allDay: false,
-                bgColor: '#2563eb',
-            })),
-        [upcomingContests]
-    );
-
     // For calendar - all contests with color coding
     const allCalendarEvents = useMemo(
         () =>
             filteredContests.map((contest, idx) => {
                 const contestStart = startOfDay(new Date(contest.start));
-                let bgColor = '#6f95c8d2'; // Future - Light Blue (blue-400)
+                let bgColor = '#6f95c8d2'; // Future - Light Blue
 
                 if (isBefore(contestStart, today)) {
-                    bgColor = '#d1d5db'; // Past - Light Gray (gray-300)
+                    bgColor = '#d1d5db'; // Past - Light Gray
                 } else if (isSameDay(contestStart, today)) {
-                    bgColor = '#34d399'; // Today - Light Green (green-400)
+                    bgColor = '#34d399'; // Today - Light Green
                 }
 
                 return {
@@ -108,13 +108,13 @@ export function useContests(currentDate?: Date) {
     return {
         contests,
         loading,
+        isFetching,
         error,
         search,
         setSearch,
         selectedPlatforms,
         setSelectedPlatforms,
         upcomingContests,
-        calendarEvents,
         allCalendarEvents,
         today,
     };

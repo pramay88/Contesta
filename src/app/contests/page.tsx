@@ -21,6 +21,7 @@ export default function ContestsPage() {
 
     const {
         loading,
+        isFetching,
         error,
         search,
         setSearch,
@@ -138,7 +139,7 @@ export default function ContestsPage() {
                         <PlatformFilter
                             selectedPlatforms={selectedPlatforms}
                             onPlatformChange={setSelectedPlatforms}
-                            isLoading={loading}
+                            isLoading={loading || isFetching}
                         />
                     </div>
                 </div>
