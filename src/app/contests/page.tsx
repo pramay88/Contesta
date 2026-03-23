@@ -1,23 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
-import { format } from 'date-fns';
-import { ContestsSidebar } from '@/components/ContestsSidebar';
-import { ContestsCalendar } from '@/components/ContestsCalendar';
+import { ContestaLogo } from '@/components/ContestaLogo';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { StatsHeader } from '@/components/StatsHeader';
 import { PlatformFilter } from '@/components/PlatformFilter';
+import { ContestsSidebar } from '@/components/ContestsSidebar';
+import { ContestsCalendar } from '@/components/ContestsCalendar';
 import { useContests } from './hooks/useContests';
+import { PLATFORM_OPTIONS } from './constants';
 import { BsListUl, BsCalendar3 } from 'react-icons/bs';
-import { ContestaLogo } from '@/components/ContestaLogo';
+
+type FilterType = 'all' | 'today' | 'week' | 'month';
 
 export default function ContestsPage() {
-    // Desktop: both can be shown, Mobile: only one
-    const [showCalendar, setShowCalendar] = useState(true);
-    const [showList, setShowList] = useState(true);
-    const [mobileView, setMobileView] = useState<'calendar' | 'list'>('calendar');
-
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [mobileView, setMobileView] = useState<'calendar' | 'list'>('calendar');
+    const [contestFilter, setContestFilter] = useState<FilterType>('all');
 
     const {
         loading,
@@ -29,113 +29,110 @@ export default function ContestsPage() {
         setSelectedPlatforms,
         upcomingContests,
         allCalendarEvents,
-        today,
     } = useContests(currentDate);
 
-    // Stats Logic
+    const now = new Date();
     const todayCount = upcomingContests.filter(c => {
-        const start = new Date(c.start);
-        const today = new Date();
-        return start.getDate() === today.getDate() &&
-            start.getMonth() === today.getMonth() &&
-            start.getFullYear() === today.getFullYear();
+        const s = new Date(c.start);
+        return s.getDate() === now.getDate() && s.getMonth() === now.getMonth() && s.getFullYear() === now.getFullYear();
     }).length;
-
-    const weekCount = upcomingContests.filter(c => {
-        const start = new Date(c.start);
-        const now = new Date();
-        const nextWeek = new Date(); nextWeek.setDate(now.getDate() + 7);
-        return start >= now && start <= nextWeek;
-    }).length;
+    const weekEnd = new Date(); weekEnd.setDate(now.getDate() + 7);
+    const weekCount = upcomingContests.filter(c => { const s = new Date(c.start); return s >= now && s <= weekEnd; }).length;
+    const platformCount = PLATFORM_OPTIONS.length;
 
     const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
-        const clickedDate = new Date(slotInfo.start);
-        clickedDate.setHours(0, 0, 0, 0);
-
-        if (selectedDate && selectedDate.getTime() === clickedDate.getTime()) {
-            setSelectedDate(null);
-        } else {
-            setSelectedDate(clickedDate);
-        }
+        const clicked = new Date(slotInfo.start); clicked.setHours(0, 0, 0, 0);
+        setSelectedDate(prev => prev && prev.getTime() === clicked.getTime() ? null : clicked);
     };
 
-    // Desktop toggle handlers
-    const toggleCalendar = () => setShowCalendar(!showCalendar);
-    const toggleList = () => setShowList(!showList);
-
-    // Mobile toggle handlers
-    const setMobileCalendar = () => setMobileView('calendar');
-    const setMobileList = () => setMobileView('list');
-
     return (
-        <div className="min-h-screen bg-gray-50 p-3 md:p-4 font-sans overflow-x-hidden">
-            {/* Header Area */}
-            <div className="max-w-[1600px] mx-auto mb-3">
-                <div className="flex items-center justify-between gap-3 mb-3">
-                    <div className="flex items-center gap-2.5">
-                        {/* Logo */}
-                        <div className="bg-gradient-to-br from-green-500 to-blue-500 p-2 rounded-lg shadow-md">
-                            <ContestaLogo className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-bold text-gray-900 tracking-tight">Contesta.io</h1>
-                            <p className="text-gray-500 text-xs hidden sm:block">All contests in one place</p>
-                        </div>
-                    </div>
+        <div className="min-h-screen" style={{ background: 'var(--bg-page)' }}>
 
-                    {/* Toggle Buttons */}
-                    <div className="flex items-center gap-2">
-                        {/* Desktop - Both can be selected */}
-                        <button
-                            onClick={toggleCalendar}
-                            className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-sm shadow-sm font-medium transition-all ${showCalendar
-                                ? 'bg-blue-600 border-blue-600 text-white'
-                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                                }`}
-                        >
-                            <BsCalendar3 className="w-3.5 h-3.5" /> Calendar
-                        </button>
-                        <button
-                            onClick={toggleList}
-                            className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-sm shadow-sm font-medium transition-all ${showList
-                                ? 'bg-blue-600 border-blue-600 text-white'
-                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                                }`}
-                        >
-                            <BsListUl className="w-3.5 h-3.5" /> List
-                        </button>
+            {/* ── Header ──────────────────────────────────────────── */}
+            <header className="sticky top-0 z-40 backdrop-blur-md border-b"
+                    style={{ background: 'var(--bg-header)', borderColor: 'var(--border)' }}>
+                <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-3">
+                    {/* Single row: logo | spacer | search + theme | mobile toggles */}
+                    <div className="flex items-center gap-3">
+                        {/* Logo + name */}
+                        <div className="flex items-center gap-2.5 flex-shrink-0">
+                            <ContestaLogo className="w-9 h-9" />
+                            <div>
+                                <h1 className="text-base font-bold leading-none"
+                                    style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-primary)' }}>
+                                    Contesta<span style={{ color: 'var(--accent)' }}>.io</span>
+                                </h1>
+                                <p className="text-[10px] mt-0.5 hidden sm:block" style={{ color: 'var(--text-muted)' }}>
+                                    All competitive programming contests, one place.
+                                </p>
+                            </div>
+                        </div>
 
-                        {/* Mobile - Only one can be selected */}
-                        <button
-                            onClick={setMobileCalendar}
-                            className={`lg:hidden flex items-center justify-center px-2.5 py-1.5 border rounded-lg text-sm shadow-sm font-medium transition-all ${mobileView === 'calendar'
-                                ? 'bg-blue-600 border-blue-600 text-white'
-                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                                }`}
-                        >
-                            <BsCalendar3 className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={setMobileList}
-                            className={`lg:hidden flex items-center justify-center px-2.5 py-1.5 border rounded-lg text-sm shadow-sm font-medium transition-all ${mobileView === 'list'
-                                ? 'bg-blue-600 border-blue-600 text-white'
-                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                                }`}
-                        >
-                            <BsListUl className="w-4 h-4" />
-                        </button>
+                        {/* Spacer */}
+                        <div className="flex-1" />
+
+                        {/* Search + theme — exactly like reference image (search box | moon button) */}
+                        <div className="hidden sm:flex items-center gap-2">
+                            {/* Search */}
+                            <div className="relative">
+                                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none"
+                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                                     style={{ color: 'var(--text-muted)' }}>
+                                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                                <input
+                                    type="text"
+                                    placeholder="Search contests..."
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
+                                    className="w-52 md:w-64 pl-9 pr-4 py-2 text-xs rounded-xl border outline-none transition-all"
+                                    style={{
+                                        fontFamily: 'var(--font-inter), sans-serif',
+                                        background: 'var(--bg-card)',
+                                        borderColor: 'var(--border)',
+                                        color: 'var(--text-primary)',
+                                    }}
+                                    onFocus={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
+                                    onBlur={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                                />
+                            </div>
+                            {/* Theme toggle — icon button right beside search */}
+                            <ThemeToggle />
+                        </div>
+
+                        {/* Mobile: view toggles */}
+                        <div className="flex sm:hidden items-center gap-1.5">
+                            <ThemeToggle />
+                            {(['calendar', 'list'] as const).map(v => (
+                                <button key={v} onClick={() => setMobileView(v)}
+                                    className="p-2 rounded-lg border"
+                                    style={{
+                                        background: mobileView === v ? 'var(--accent)' : 'var(--bg-card)',
+                                        borderColor: mobileView === v ? 'var(--accent)' : 'var(--border)',
+                                        color: mobileView === v ? '#fff' : 'var(--text-secondary)',
+                                    }}>
+                                    {v === 'calendar' ? <BsCalendar3 className="w-3.5 h-3.5" /> : <BsListUl className="w-4 h-4" />}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
+            </header>
 
-                {/* Sub-Header: Stats & Filter */}
-                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
-                    <StatsHeader
-                        todayCount={todayCount}
-                        weekCount={weekCount}
-                        upcomingCount={upcomingContests.length}
-                    />
+            {/* ── Main ────────────────────────────────────────────── */}
+            <main className="max-w-[1400px] mx-auto px-4 md:px-6 py-4 flex flex-col gap-4">
 
-                    <div className="w-full lg:w-64">
+                {/* Stats + Platform filter on same row */}
+                <div className="flex items-start gap-3 flex-wrap">
+                    <div className="flex-1 min-w-0">
+                        <StatsHeader
+                            todayCount={todayCount}
+                            weekCount={weekCount}
+                            upcomingCount={upcomingContests.length}
+                            platformCount={platformCount}
+                        />
+                    </div>
+                    <div className="flex-shrink-0 pt-0.5">
                         <PlatformFilter
                             selectedPlatforms={selectedPlatforms}
                             onPlatformChange={setSelectedPlatforms}
@@ -143,76 +140,80 @@ export default function ContestsPage() {
                         />
                     </div>
                 </div>
-            </div>
 
-            {/* Content Grid */}
-            <div className="max-w-[1600px] mx-auto">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-                    {/* DESKTOP Calendar */}
-                    {showCalendar && (
-                        <div className={`hidden lg:block ${showCalendar && showList ? 'lg:col-span-2' : 'lg:col-span-3'
-                            }`}>
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
-                                <ContestsCalendar
-                                    events={allCalendarEvents}
-                                    loading={loading}
-                                    currentDate={currentDate}
-                                    onNavigate={setCurrentDate}
-                                    selectedDate={selectedDate}
-                                    onSelectSlot={handleSelectSlot}
-                                />
-                            </div>
-                        </div>
-                    )}
+                {/* Mobile search */}
+                <div className="sm:hidden relative">
+                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                         style={{ color: 'var(--text-muted)' }}>
+                        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input type="text" placeholder="Search contests..." value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border outline-none"
+                        style={{ fontFamily: 'var(--font-inter), sans-serif', background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
+                </div>
 
-                    {/* DESKTOP Sidebar */}
-                    {showList && (
-                        <div className={`hidden lg:block ${showCalendar && showList ? 'lg:col-span-1' : 'lg:col-span-3'
-                            }`}>
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 overflow-hidden">
-                                <ContestsSidebar
-                                    search={search}
-                                    onSearchChange={setSearch}
-                                    upcomingContests={upcomingContests}
-                                    loading={loading}
-                                    error={error}
-                                />
-                            </div>
-                        </div>
-                    )}
+                {/* Desktop: Calendar + Sidebar */}
+                <div className="hidden sm:grid sm:grid-cols-5 xl:grid-cols-3 gap-4">
+                    <div className="sm:col-span-3 xl:col-span-2">
+                        <ContestsCalendar
+                            events={allCalendarEvents}
+                            loading={loading}
+                            currentDate={currentDate}
+                            onNavigate={setCurrentDate}
+                            selectedDate={selectedDate}
+                            onSelectSlot={handleSelectSlot}
+                        />
+                    </div>
+                    <div className="sm:col-span-2 xl:col-span-1 rounded-2xl p-4 flex flex-col"
+                         style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', height: 'calc(100vh - 190px)', maxHeight: '740px' }}>
+                        <ContestsSidebar
+                            search={search}
+                            onSearchChange={setSearch}
+                            upcomingContests={upcomingContests}
+                            loading={loading}
+                            error={error}
+                            currentFilter={contestFilter}
+                            onFilterChange={setContestFilter}
+                        />
+                    </div>
+                </div>
 
-                    {/* MOBILE Calendar */}
-                    {mobileView === 'calendar' && (
-                        <div className="block lg:hidden col-span-1">
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
-                                <ContestsCalendar
-                                    events={allCalendarEvents}
-                                    loading={loading}
-                                    currentDate={currentDate}
-                                    onNavigate={setCurrentDate}
-                                    selectedDate={selectedDate}
-                                    onSelectSlot={handleSelectSlot}
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* MOBILE Sidebar */}
-                    {mobileView === 'list' && (
-                        <div className="block lg:hidden col-span-1">
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 overflow-hidden">
-                                <ContestsSidebar
-                                    search={search}
-                                    onSearchChange={setSearch}
-                                    upcomingContests={upcomingContests}
-                                    loading={loading}
-                                    error={error}
-                                />
-                            </div>
+                {/* Mobile: Single view */}
+                <div className="sm:hidden">
+                    {mobileView === 'calendar' ? (
+                        <ContestsCalendar
+                            events={allCalendarEvents}
+                            loading={loading}
+                            currentDate={currentDate}
+                            onNavigate={setCurrentDate}
+                            selectedDate={selectedDate}
+                            onSelectSlot={handleSelectSlot}
+                        />
+                    ) : (
+                        <div className="rounded-2xl p-4"
+                             style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', minHeight: '60vh' }}>
+                            <ContestsSidebar
+                                search={search}
+                                onSearchChange={setSearch}
+                                upcomingContests={upcomingContests}
+                                loading={loading}
+                                error={error}
+                                currentFilter={contestFilter}
+                                onFilterChange={setContestFilter}
+                            />
                         </div>
                     )}
                 </div>
-            </div>
+            </main>
+
+            {/* Footer */}
+            <footer className="mt-8 pb-6 text-center">
+                <p className="text-[11px]" style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-muted)' }}>
+                    Contesta.io — Built for competitive programmers ⚡
+                </p>
+            </footer>
         </div>
     );
 }
