@@ -18,8 +18,8 @@
   --text-secondary: #475569;
   --text-muted: #94a3b8;
   --text-accent: #2563eb;
-  --shadow-sm: 0 1px 3px 0 rgba(0,0,0,0.07), 0 1px 2px -1px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 12px 0 rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
   --accent: #2563eb;
   --accent-light: #eff6ff;
   --today-ring: #10b981;
@@ -38,8 +38,8 @@
   --text-secondary: #8b949e;
   --text-muted: #484f58;
   --text-accent: #58a6ff;
-  --shadow-sm: 0 1px 3px 0 rgba(0,0,0,0.4);
-  --shadow-md: 0 4px 12px 0 rgba(0,0,0,0.5);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.5);
   --accent: #58a6ff;
   --accent-light: rgba(88, 166, 255, 0.1);
   --today-ring: #10b981;
@@ -80,27 +80,65 @@ body {
   width: 5px;
   height: 5px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 99px;
 }
+
 .dark ::-webkit-scrollbar-thumb {
   background: #30363d;
 }
 
 /* ─── Platform dot colors ────────────────────────────── */
-.dot-leetcode    { background: #f89f1b; }
-.dot-codeforces  { background: #3b82f6; }
-.dot-codechef    { background: #7c3aed; }
-.dot-atcoder     { background: #0ea5e9; }
-.dot-hackerrank  { background: #22c55e; }
-.dot-hackerearth { background: #6366f1; }
-.dot-geeksforgeeks { background: #16a34a; }
-.dot-kaggle      { background: #06b6d4; }
-.dot-topcoder    { background: #ef4444; }
-.dot-interviewbit { background: #8b5cf6; }
-.dot-codingninjas { background: #f97316; }
-.dot-default     { background: #6b7280; }
+.dot-leetcode {
+  background: #f89f1b;
+}
+
+.dot-codeforces {
+  background: #3b82f6;
+}
+
+.dot-codechef {
+  background: #7c3aed;
+}
+
+.dot-atcoder {
+  background: #0ea5e9;
+}
+
+.dot-hackerrank {
+  background: #22c55e;
+}
+
+.dot-hackerearth {
+  background: #6366f1;
+}
+
+.dot-geeksforgeeks {
+  background: #16a34a;
+}
+
+.dot-kaggle {
+  background: #06b6d4;
+}
+
+.dot-topcoder {
+  background: #ef4444;
+}
+
+.dot-interviewbit {
+  background: #8b5cf6;
+}
+
+.dot-codingninjas {
+  background: #f97316;
+}
+
+.dot-default {
+  background: #6b7280;
+}

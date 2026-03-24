@@ -10,17 +10,17 @@ interface PlatformFilterProps {
 }
 
 const PLATFORM_COLORS: Record<string, string> = {
-    'leetcode.com':      '#f89f1b',
-    'codeforces.com':    '#3b82f6',
-    'codechef.com':      '#7c3aed',
-    'atcoder.jp':        '#0ea5e9',
-    'hackerrank.com':    '#22c55e',
-    'hackerearth.com':   '#6366f1',
+    'leetcode.com': '#f89f1b',
+    'codeforces.com': '#3b82f6',
+    'codechef.com': '#7c3aed',
+    'atcoder.jp': '#0ea5e9',
+    'hackerrank.com': '#22c55e',
+    'hackerearth.com': '#6366f1',
     'geeksforgeeks.org': '#16a34a',
-    'kaggle.com':        '#06b6d4',
-    'topcoder.com':      '#ef4444',
-    'interviewbit.com':  '#8b5cf6',
-    'codingninjas.com':  '#f97316',
+    'kaggle.com': '#06b6d4',
+    'topcoder.com': '#ef4444',
+    'interviewbit.com': '#8b5cf6',
+    'codingninjas.com': '#f97316',
 };
 
 export function PlatformFilter({ selectedPlatforms, onPlatformChange, isLoading }: PlatformFilterProps) {
@@ -65,7 +65,7 @@ export function PlatformFilter({ selectedPlatforms, onPlatformChange, isLoading 
                 Platforms
                 {activeCount > 0 && (
                     <span className="flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold text-white"
-                          style={{ background: 'var(--accent)' }}>
+                        style={{ background: 'var(--accent)' }}>
                         {activeCount}
                     </span>
                 )}
@@ -83,15 +83,15 @@ export function PlatformFilter({ selectedPlatforms, onPlatformChange, isLoading 
                 >
                     {/* Panel header */}
                     <div className="flex items-center justify-between px-3 py-2 border-b"
-                         style={{ borderColor: 'var(--border)', background: 'var(--bg-card-hover)' }}>
+                        style={{ borderColor: 'var(--border)', background: 'var(--bg-card-hover)' }}>
                         <span className="text-[11px] font-bold tracking-wider"
-                              style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-muted)' }}>
+                            style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-muted)' }}>
                             FILTER BY PLATFORM
                         </span>
                         {activeCount > 0 && (
                             <button onClick={clearAll}
-                                    className="flex items-center gap-0.5 text-[11px] font-semibold"
-                                    style={{ color: 'var(--accent)' }}>
+                                className="flex items-center gap-0.5 text-[11px] font-semibold"
+                                style={{ color: 'var(--accent)' }}>
                                 <X className="w-3 h-3" /> Clear
                             </button>
                         )}
@@ -113,12 +113,12 @@ export function PlatformFilter({ selectedPlatforms, onPlatformChange, isLoading 
                                 >
                                     {/* Checkbox */}
                                     <div className="w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all"
-                                         style={{ borderColor: isActive ? color : 'var(--border)', background: isActive ? color : 'transparent' }}>
+                                        style={{ borderColor: isActive ? color : 'var(--border)', background: isActive ? color : 'transparent' }}>
                                         {isActive && <Check className="w-2.5 h-2.5 text-white" />}
                                     </div>
                                     <PlatformIcon resource={opt.value} className="w-3.5 h-3.5 flex-shrink-0" />
                                     <span className="text-xs font-medium"
-                                          style={{ color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)', fontFamily: 'var(--font-inter), sans-serif' }}>
+                                        style={{ color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)', fontFamily: 'var(--font-inter), sans-serif' }}>
                                         {opt.label}
                                     </span>
                                 </div>

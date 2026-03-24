@@ -32,9 +32,11 @@ const PLATFORM_LABELS: Record<string, string> = {
     'codingninjas.com': 'CodeStudio',
 };
 
-function getTimeUntil(start: Date): string {
-    const diff = start.getTime() - Date.now();
-    if (diff <= 0) return diff > -3600000 * 6 ? 'LIVE' : '';
+function getTimeUntil(start: Date, end: Date): string {
+    const now = Date.now();
+    if (now > end.getTime()) return 'ENDED';
+    const diff = start.getTime() - now;
+    if (diff <= 0) return 'LIVE';
     const d = Math.floor(diff / 86400000);
     const h = Math.floor((diff % 86400000) / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
@@ -62,8 +64,9 @@ function generateGCalUrl(contest: Contest): string {
 function ContestCard({ contest }: { contest: Contest }) {
     const start = new Date(contest.start);
     const end = new Date(contest.end);
-    const timeUntil = getTimeUntil(start);
+    const timeUntil = getTimeUntil(start, end);
     const isLive = timeUntil === 'LIVE';
+    const isEnded = timeUntil === 'ENDED';
     const color = PLATFORM_COLORS[contest.resource] ?? '#6b7280';
     const label = PLATFORM_LABELS[contest.resource] ?? contest.resource.split('.')[0];
 
@@ -88,6 +91,11 @@ function ContestCard({ contest }: { contest: Contest }) {
                                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" />
                                 </span>
                                 LIVE
+                            </span>
+                        ) : isEnded ? (
+                            <span className="text-xs font-bold"
+                                style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: '#ef4444' }}>
+                                Ended
                             </span>
                         ) : (
                             <span className="text-xs font-semibold"
