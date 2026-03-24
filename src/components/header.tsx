@@ -23,7 +23,7 @@ export function Header({ search, onSearchChange, mobileView, onMobileViewChange 
                         <ContestaLogo className="w-9 h-9" />
                         <h1 className="text-[17px] font-extrabold leading-none tracking-tight"
                             style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-primary)' }}>
-                            Contesta<span style={{ color: '#f97316' }}>.io</span>
+                            Contesta<span style={{ color: '#16a6f9ff' }}>.io</span>
                         </h1>
                     </div>
 
