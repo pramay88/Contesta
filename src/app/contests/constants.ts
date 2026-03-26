@@ -4,12 +4,7 @@ export const SUPPORTED_RESOURCES = [
     'codechef.com',
     'geeksforgeeks.org',
     'atcoder.jp',
-    'kaggle.com',
-    'topcoder.com',
-    'hackerrank.com',
-    'hackerearth.com',
-    'interviewbit.com',
-    'codingninjas.com',
+    'naukri.com/code360',
 ];
 
 export const PLATFORM_OPTIONS = [
@@ -18,12 +13,7 @@ export const PLATFORM_OPTIONS = [
     { value: 'codechef.com', label: 'CodeChef' },
     { value: 'geeksforgeeks.org', label: 'GFG' },
     { value: 'atcoder.jp', label: 'AtCoder' },
-    { value: 'kaggle.com', label: 'Kaggle' },
-    { value: 'topcoder.com', label: 'TopCoder' },
-    { value: 'hackerrank.com', label: 'HackerRank' },
-    { value: 'hackerearth.com', label: 'HackerEarth' },
-    { value: 'interviewbit.com', label: 'InterviewBit' },
-    { value: 'codingninjas.com', label: 'CodeStudio' },
+    { value: 'naukri.com/code360', label: 'Code360' },
 ];
 
 export interface Contest {

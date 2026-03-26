@@ -68,6 +68,8 @@ export function PlatformIcon({ resource, className = 'w-5 h-5' }: PlatformIconPr
     if (r === 'topcoder.com')
         return <SiTopcoder className={`${className} text-red-600`} />;
     if (r === 'atcoder.jp') return <AtCoderIcon className={className} />;
+    if (r === 'naukri.com/code360')
+        return <FaCode className={`${className} text-purple-600`} />;
 
     return null;
 }

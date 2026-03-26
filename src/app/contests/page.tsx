@@ -46,7 +46,7 @@ export default function ContestsPage() {
     return (
         <div className="min-h-screen" style={{ background: 'var(--bg-page)' }}>
 
-            {/* ── Header ──────────────────────────────────────────── */}
+            {/* Header */}
             <Header
                 search={search}
                 onSearchChange={setSearch}
@@ -54,11 +54,12 @@ export default function ContestsPage() {
                 onMobileViewChange={setMobileView}
             />
 
-            {/* ── Main ────────────────────────────────────────────── */}
+            {/* Main */}
             <main className="max-w-[1400px] mx-auto px-4 md:px-6 py-4 flex flex-col gap-4">
 
-                {/* Stats + Platform filter on same row */}
+                {/* Stats + Platform filter in a row */}
                 <div className="flex items-start gap-3 flex-wrap">
+                    
                     <div className="flex-1 min-w-0">
                         <StatsHeader
                             todayCount={todayCount}
@@ -67,6 +68,7 @@ export default function ContestsPage() {
                             platformCount={platformCount}
                         />
                     </div>
+                    
                     <div className="flex-shrink-0 pt-0.5">
                         <PlatformFilter
                             selectedPlatforms={selectedPlatforms}
@@ -74,6 +76,7 @@ export default function ContestsPage() {
                             isLoading={loading || isFetching}
                         />
                     </div>
+                    
                 </div>
 
                 {/* Mobile search */}

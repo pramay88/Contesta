@@ -37,6 +37,7 @@ const PLATFORM_DOT: Record<string, string> = {
     'topcoder.com': '#ef4444',
     'interviewbit.com': '#8b5cf6',
     'codingninjas.com': '#f97316',
+    'naukri.com/code360': '#a855f7',
 };
 
 function generateGCalUrl(ev: CalendarEvent): string {

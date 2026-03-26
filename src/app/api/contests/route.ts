@@ -3,16 +3,13 @@ import { NextRequest, NextResponse } from 'next/server';
 const CLIST_API_USERNAME = process.env.CLIST_API_USERNAME || '';
 const CLIST_API_KEY = process.env.CLIST_API_KEY || '';
 
-// Request specific resources from Clist API
+// Request specific resources from Clist API (only platforms with active data)
 const CLIST_RESOURCE_IDS = [
     'leetcode.com',
     'codeforces.com',
     'codechef.com',
     'atcoder.jp',
-    'hackerrank.com',
-    'hackerearth.com',
-    'kaggle.com',
-    'topcoder.com',
+    'naukri.com/code360',
 ];
 
 const SUPPORTED_RESOURCES = [
@@ -21,12 +18,7 @@ const SUPPORTED_RESOURCES = [
     'codechef.com',
     'geeksforgeeks.org',
     'atcoder.jp',
-    'kaggle.com',
-    'topcoder.com',
-    'hackerrank.com',
-    'hackerearth.com',
-    'interviewbit.com',
-    'codingninjas.com',
+    'naukri.com/code360',
 ];
 
 interface Contest {
