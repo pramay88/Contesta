@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   description:
     "Track and manage coding contests from CodeForces, LeetCode, CodeChef, AtCoder, and more. Never miss a contest with our unified calendar.",
   icons: {
-    icon: "/logo.svg",
+    icon: "/contesta-logo.png",
   },
 };
 

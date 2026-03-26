@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 
 interface Hackathon {
     id: string;
@@ -20,32 +18,10 @@ interface Hackathon {
     thumbnail?: string;
 }
 
-// Fetch from Unstop (local JSON)
+// Fetch from Unstop (local JSON) - disabled since file not in repo
 async function fetchUnstopHackathons(): Promise<Hackathon[]> {
-    try {
-        const filePath = join(process.cwd(), 'unstop-scraper', 'unstop-contests.json');
-        const data = JSON.parse(readFileSync(filePath, 'utf-8'));
-
-        console.log('Unstop hackathons loaded:', data.contests?.length || 0);
-
-        return (data.contests || []).map((c: any) => ({
-            id: `unstop-${c.event?.replace(/\s+/g, '-').toLowerCase() || Math.random()}`,
-            title: c.event || '',
-            url: c.href || '',
-            platform: 'unstop' as const,
-            eventStart: c.start || new Date().toISOString(),
-            eventEnd: c.end || new Date().toISOString(),
-            status: 'live' as const,
-            type: 'online' as const,
-            isPaid: false,
-            organizer: 'Unknown',
-            domains: [],
-            skills: [],
-        }));
-    } catch (error) {
-        console.error('Error loading Unstop hackathons:', error);
-        return [];
-    }
+    // File not available in deployment
+    return [];
 }
 
 // Sample data for Devpost and Kaggle (until scrapers are running)
