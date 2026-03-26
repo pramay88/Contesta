@@ -40,9 +40,30 @@ const PLATFORM_DOT: Record<string, string> = {
     'naukri.com/code360': '#a855f7',
 };
 
+function getPlatformLabel(resource: string): string {
+    const map: Record<string, string> = {
+        'leetcode.com': 'LeetCode',
+        'codeforces.com': 'Codeforces',
+        'codechef.com': 'CodeChef',
+        'atcoder.jp': 'AtCoder',
+        'hackerrank.com': 'HackerRank',
+        'hackerearth.com': 'HackerEarth',
+        'geeksforgeeks.org': 'GFG',
+        'kaggle.com': 'Kaggle',
+        'topcoder.com': 'TopCoder',
+        'interviewbit.com': 'InterviewBit',
+        'codingninjas.com': 'CodeStudio',
+        'naukri.com/code360': 'Code360',
+    };
+    return map[resource] || resource;
+}
+
 function generateGCalUrl(ev: CalendarEvent): string {
     const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.title)}&dates=${fmt(new Date(ev.start))}/${fmt(new Date(ev.end))}&location=${encodeURIComponent(ev.resource)}`;
+    const platform = getPlatformLabel(ev.resource);
+    const title = `[${platform}] ${ev.title}`;
+    const details = `Contest link: ${ev.url}`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${fmt(new Date(ev.start))}/${fmt(new Date(ev.end))}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(ev.url)}`;
 }
 
 // Day detail panel — shown in a fixed corner after clicking a day
@@ -116,12 +137,12 @@ function DayPanel({ events, date, onClose }: { events: CalendarEvent[]; date: Da
                                         <PlatformIcon resource={ev.resource} className="w-3 h-3 flex-shrink-0" />
                                         <span className="text-[10px] font-bold"
                                               style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color }}>
-                                            {ev.resource.split('.')[0]}
+                                            {getPlatformLabel(ev.resource)}
                                         </span>
                                     </div>
                                     <p className="text-[13px] font-medium leading-snug mb-1"
                                        style={{ color: 'var(--text-primary)' }}>
-                                        {ev.title}
+                                        [{getPlatformLabel(ev.resource)}] {ev.title}
                                     </p>
                                     <div className="text-[11px] flex items-center gap-2"
                                          style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-muted)' }}>

@@ -10,12 +10,16 @@ import { useContests } from './hooks/useContests';
 import { PLATFORM_OPTIONS } from './constants';
 
 type FilterType = 'all' | 'today' | 'week' | 'month';
+type DifficultyFilter = 'all' | 'beginner' | 'intermediate' | 'advanced' | 'mixed' | 'unknown';
+type DurationFilter = 'all' | 'short' | 'medium' | 'long' | 'unknown';
 
 export default function ContestsPage() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [mobileView, setMobileView] = useState<'calendar' | 'list'>('calendar');
     const [contestFilter, setContestFilter] = useState<FilterType>('all');
+    const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('all');
+    const [durationFilter, setDurationFilter] = useState<DurationFilter>('all');
 
     const {
         loading,
@@ -27,7 +31,7 @@ export default function ContestsPage() {
         setSelectedPlatforms,
         upcomingContests,
         allCalendarEvents,
-    } = useContests(currentDate);
+    } = useContests(currentDate, difficultyFilter, durationFilter);
 
     const now = new Date();
     const todayCount = upcomingContests.filter(c => {
@@ -73,6 +77,10 @@ export default function ContestsPage() {
                         <PlatformFilter
                             selectedPlatforms={selectedPlatforms}
                             onPlatformChange={setSelectedPlatforms}
+                            difficultyFilter={difficultyFilter}
+                            onDifficultyChange={setDifficultyFilter}
+                            durationFilter={durationFilter}
+                            onDurationChange={setDurationFilter}
                             isLoading={loading || isFetching}
                         />
                     </div>

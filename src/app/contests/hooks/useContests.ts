@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { isAfter, isSameDay, isBefore, startOfDay } from 'date-fns';
-import { Contest, SUPPORTED_RESOURCES } from '../constants';
+import { Contest, SUPPORTED_RESOURCES, DifficultyLevel, DurationCategory, DifficultyFilter, DurationFilter } from '../constants';
 
-export function useContests(currentDate?: Date) {
+export function useContests(currentDate?: Date, difficultyFilter: DifficultyFilter = 'all', durationFilter: DurationFilter = 'all') {
     const [contests, setContests] = useState<Contest[]>([]);
     // `loading` is true only on the very first fetch (no data yet)
     const [loading, setLoading] = useState(true);
@@ -54,6 +54,72 @@ export function useContests(currentDate?: Date) {
 
     const today = startOfDay(new Date());
 
+    const classifyDifficulty = (c: Contest): DifficultyLevel => {
+        const title = (c.event || '').toLowerCase();
+        const resource = (c.resource || '').toLowerCase();
+
+        try {
+            if (resource === 'leetcode.com') {
+                if (title.includes('weekly') || title.includes('biweekly') || title.includes('contest')) {
+                    return 'mixed';
+                }
+                if (title.includes('easy')) return 'beginner';
+                if (title.includes('medium')) return 'intermediate';
+                if (title.includes('hard')) return 'advanced';
+            }
+
+            if (resource === 'codeforces.com') {
+                if (title.includes('div. 4') || title.includes('div 4') || title.includes('div. 3') || title.includes('div 3')) return 'beginner';
+                if (title.includes('div. 2') || title.includes('div 2')) return 'intermediate';
+                if (title.includes('div. 1') || title.includes('div 1')) return 'advanced';
+                if (title.includes('educational') || title.includes('global round') || title.includes('icpc')) return 'mixed';
+            }
+
+            if (resource === 'codechef.com') {
+                if (title.includes('starters') || title.includes('lunchtime')) return 'beginner';
+                if (title.includes('cook-off') || title.includes('cookoff') || title.includes('educational')) return 'intermediate';
+                if (title.includes('long challenge') || title.includes('longchallenge')) return 'mixed';
+            }
+
+            if (resource === 'atcoder.jp') {
+                if (title.includes('abc') || title.includes('beginner')) return 'beginner';
+                if (title.includes('arc') || title.includes('regular')) return 'intermediate';
+                if (title.includes('agc') || title.includes('grand')) return 'advanced';
+            }
+
+            if (resource === 'geeksforgeeks.org' || resource === 'naukri.com/code360') {
+                return 'beginner';
+            }
+        } catch {
+            // if classification fails, continue to default
+        }
+
+        return 'unknown';
+    };
+
+    const getDurationCategory = (minutes: number): DurationCategory => {
+        if (!Number.isFinite(minutes) || minutes <= 0) return 'unknown';
+        if (minutes <= 120) return 'short';
+        if (minutes <= 300) return 'medium';
+        return 'long';
+    };
+
+    const annotateContests = (items: Contest[]) => {
+        return items.map((contest) => {
+            const start = new Date(contest.start);
+            const end = new Date(contest.end);
+            const durationMinutes = isNaN(start.getTime()) || isNaN(end.getTime()) ? 0 : Math.max(0, Math.floor((end.getTime() - start.getTime()) / 60000));
+            const difficulty = classifyDifficulty(contest);
+            const durationCategory = getDurationCategory(durationMinutes);
+            return {
+                ...contest,
+                difficulty,
+                durationMinutes,
+                durationCategory,
+            };
+        });
+    };
+
     const filteredContests = useMemo(() => {
         return contests.filter((c) => {
             const resource = c.resource?.toLowerCase();
@@ -68,20 +134,30 @@ export function useContests(currentDate?: Date) {
         });
     }, [contests, search, selectedPlatforms]);
 
+    const annotatedContests = useMemo(() => annotateContests(filteredContests), [filteredContests]);
+
+    const filteredByDifficultyDuration = useMemo(() =>
+        annotatedContests.filter((c) => {
+            const matchesDifficulty = difficultyFilter === 'all' || (c.difficulty || 'unknown') === difficultyFilter;
+            const matchesDuration = durationFilter === 'all' || (c.durationCategory || 'unknown') === durationFilter;
+            return matchesDifficulty && matchesDuration;
+        }),
+        [annotatedContests, difficultyFilter, durationFilter]
+    );
+
     const upcomingContests = useMemo(
         () =>
-            filteredContests.filter(
+            filteredByDifficultyDuration.filter(
                 (c) =>
                     isAfter(new Date(c.start), today) ||
                     isSameDay(new Date(c.start), today)
             ),
-        [filteredContests, today]
+        [filteredByDifficultyDuration, today]
     );
 
-    // For calendar - all contests with color coding
     const allCalendarEvents = useMemo(
         () =>
-            filteredContests.map((contest, idx) => {
+            filteredByDifficultyDuration.map((contest, idx) => {
                 const contestStart = startOfDay(new Date(contest.start));
                 let bgColor = '#6f95c8d2'; // Future - Light Blue
 
@@ -102,7 +178,7 @@ export function useContests(currentDate?: Date) {
                     bgColor,
                 };
             }),
-        [filteredContests, today]
+        [annotatedContests, today]
     );
 
     return {

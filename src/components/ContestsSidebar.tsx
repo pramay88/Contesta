@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { format } from 'date-fns';
-import { Contest } from '@/app/contests/constants';
+import { Contest, DifficultyLevel } from '@/app/contests/constants';
 import { PlatformIcon } from './PlatformIcon';
 import { ExternalLink, CalendarPlus } from 'lucide-react';
 
@@ -60,7 +60,10 @@ function generateGCalUrl(contest: Contest): string {
     const s = new Date(contest.start);
     const e = new Date(contest.end);
     const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(contest.event)}&dates=${fmt(s)}/${fmt(e)}&location=${encodeURIComponent(contest.resource)}`;
+    const platform = PLATFORM_LABELS[contest.resource] || contest.resource;
+    const title = `[${platform}] ${contest.event}`;
+    const details = `Contest link: ${contest.href}`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${fmt(s)}/${fmt(e)}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(contest.href)}`;
 }
 
 function ContestCard({ contest }: { contest: Contest }) {
@@ -148,6 +151,31 @@ function ContestCard({ contest }: { contest: Contest }) {
                     {format(start, 'hh:mm aa')}
                 </span>
                 <span>· Duration: {formatDuration(start, end)}</span>
+                {(function () {
+    const difficulty = contest.difficulty;
+    if (!difficulty || !['beginner', 'intermediate', 'advanced', 'mixed'].includes(difficulty)) return null;
+
+    let styles = { background: '#f3f4f6', color: '#374151' }; // default
+
+    if (difficulty === 'beginner') {
+        styles = { background: '#d1fae5', color: '#065f46' }; // green
+    } else if (difficulty === 'intermediate') {
+        styles = { background: '#fef3c7', color: '#92400e' }; // yellow
+    } else if (difficulty === 'advanced') {
+        styles = { background: '#fee2e2', color: '#991b1b' }; // red
+    } else if (difficulty === 'mixed') {
+        styles = { background: '#e5e7eb', color: '#374151' }; // gray
+    }
+
+    return (
+        <span
+            className="px-2 py-0.5 rounded-full text-[10px]"
+            style={styles}
+        >
+            {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+        </span>
+    );
+})()}
             </div>
         </div>
     );
@@ -170,31 +198,34 @@ function SkeletonCard() {
 // ─── Filter logic ─────────────────────────────────────────────
 type FilterType = 'all' | 'today' | 'week' | 'month';
 
-function getFilteredContests(contests: Contest[], filter: FilterType): Contest[] {
-    const now = new Date();
-    if (filter === 'all') return contests;
+type DurationFilter = 'all' | 'short' | 'medium' | 'long' | 'unknown';
 
+function getFilteredContests(
+    contests: Contest[],
+    filter: FilterType
+): Contest[] {
+    const now = new Date();
     const startOf = (d: Date) => { const c = new Date(d); c.setHours(0, 0, 0, 0); return c; };
     const endOf = (d: Date) => { const c = new Date(d); c.setHours(23, 59, 59, 999); return c; };
 
     const todayStart = startOf(now);
     const todayEnd = endOf(now);
+    const weekEnd = new Date(now); weekEnd.setDate(now.getDate() + 7);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0); monthEnd.setHours(23, 59, 59, 999);
 
-    if (filter === 'today') {
-        return contests.filter(c => {
-            const s = new Date(c.start);
-            return s >= todayStart && s <= todayEnd;
-        });
-    }
-    if (filter === 'week') {
-        const weekEnd = new Date(now); weekEnd.setDate(now.getDate() + 7);
-        return contests.filter(c => new Date(c.start) <= weekEnd);
-    }
-    if (filter === 'month') {
-        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0); monthEnd.setHours(23, 59, 59, 999);
-        return contests.filter(c => new Date(c.start) <= monthEnd);
-    }
-    return contests;
+    const isTimeMatch = (contest: Contest) => {
+        if (filter === 'all') return true;
+        const start = new Date(contest.start);
+        if (isNaN(start.getTime())) return false;
+
+        if (filter === 'today') return start >= todayStart && start <= todayEnd;
+        if (filter === 'week') return start <= weekEnd;
+        if (filter === 'month') return start <= monthEnd;
+
+        return true;
+    };
+
+    return contests.filter(c => isTimeMatch(c));
 }
 
 interface ContestsSidebarProps {
@@ -215,10 +246,19 @@ const FILTERS: { key: FilterType; label: string }[] = [
 ];
 
 export function ContestsSidebar({
-    search, onSearchChange, upcomingContests, loading, error, currentFilter, onFilterChange,
+    search,
+    onSearchChange,
+    upcomingContests,
+    loading,
+    error,
+    currentFilter,
+    onFilterChange,
 }: ContestsSidebarProps) {
-    // Apply time-range filter on top of the already-upcoming list
-    const filtered = useMemo(() => getFilteredContests(upcomingContests, currentFilter), [upcomingContests, currentFilter]);
+    // Apply time-range + difficulty + duration filter on top of the already-upcoming list
+    const filtered = useMemo(
+        () => getFilteredContests(upcomingContests, currentFilter),
+        [upcomingContests, currentFilter]
+    );
 
     // Group by date key
     const grouped = useMemo(() => {
@@ -240,19 +280,21 @@ export function ContestsSidebar({
             </h2>
 
             {/* Filter tabs */}
-            <div className="flex gap-0.5 flex-shrink-0 p-1 rounded-xl" style={{ background: 'var(--border-subtle)' }}>
-                {FILTERS.map(f => (
-                    <button key={f.key} onClick={() => onFilterChange(f.key)}
-                        className="flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-150 cursor-pointer"
-                        style={{
-                            fontFamily: 'var(--font-jetbrains-mono), monospace',
-                            background: currentFilter === f.key ? 'var(--bg-card)' : 'transparent',
-                            color: currentFilter === f.key ? 'var(--text-primary)' : 'var(--text-muted)',
-                            boxShadow: currentFilter === f.key ? 'var(--shadow-sm)' : 'none',
-                        }}>
-                        {f.label}
-                    </button>
-                ))}
+            <div className="flex flex-col gap-2 flex-shrink-0 p-1 rounded-xl" style={{ background: 'var(--border-subtle)' }}>
+                <div className="flex gap-0.5">
+                    {FILTERS.map(f => (
+                        <button key={f.key} onClick={() => onFilterChange(f.key)}
+                            className="flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-150 cursor-pointer"
+                            style={{
+                                fontFamily: 'var(--font-jetbrains-mono), monospace',
+                                background: currentFilter === f.key ? 'var(--bg-card)' : 'transparent',
+                                color: currentFilter === f.key ? 'var(--text-primary)' : 'var(--text-muted)',
+                                boxShadow: currentFilter === f.key ? 'var(--shadow-sm)' : 'none',
+                            }}>
+                            {f.label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Search */}

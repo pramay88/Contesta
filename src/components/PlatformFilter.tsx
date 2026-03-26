@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { PLATFORM_OPTIONS } from '@/app/contests/constants';
+import { PLATFORM_OPTIONS, DifficultyFilter, DurationFilter } from '@/app/contests/constants';
 import { PlatformIcon } from './PlatformIcon';
 import { SlidersHorizontal, Check, X } from 'lucide-react';
 
 interface PlatformFilterProps {
     selectedPlatforms: string[];
     onPlatformChange: (platforms: string[]) => void;
+    difficultyFilter: DifficultyFilter;
+    onDifficultyChange: (value: DifficultyFilter) => void;
+    durationFilter: DurationFilter;
+    onDurationChange: (value: DurationFilter) => void;
     isLoading: boolean;
 }
 
@@ -23,7 +27,24 @@ const PLATFORM_COLORS: Record<string, string> = {
     'codingninjas.com': '#f97316',
 };
 
-export function PlatformFilter({ selectedPlatforms, onPlatformChange, isLoading }: PlatformFilterProps) {
+const DIFFICULTY_OPTIONS: { key: DifficultyFilter; label: string }[] = [
+    { key: 'all', label: 'All Difficulty' },
+    { key: 'beginner', label: 'Beginner' },
+    { key: 'intermediate', label: 'Intermediate' },
+    { key: 'advanced', label: 'Advanced' },
+    { key: 'mixed', label: 'Mixed' },
+    { key: 'unknown', label: 'Unknown' },
+];
+
+const DURATION_OPTIONS: { key: DurationFilter; label: string }[] = [
+    { key: 'all', label: 'All Duration' },
+    { key: 'short', label: 'Short (≤2h)' },
+    { key: 'medium', label: 'Medium (2–5h)' },
+    { key: 'long', label: 'Long (>5h)' },
+    { key: 'unknown', label: 'Unknown' },
+];
+
+export function PlatformFilter({ selectedPlatforms, onPlatformChange, difficultyFilter, onDifficultyChange, durationFilter, onDurationChange, isLoading }: PlatformFilterProps) {
     const [isOpen, setIsOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
@@ -44,8 +65,14 @@ export function PlatformFilter({ selectedPlatforms, onPlatformChange, isLoading 
         );
     };
 
-    const clearAll = () => { if (!isLoading) onPlatformChange([]); };
-    const activeCount = selectedPlatforms.length;
+    const clearAll = () => {
+        if (!isLoading) {
+            onPlatformChange([]);
+            onDifficultyChange('all');
+            onDurationChange('all');
+        }
+    };
+    const activeCount = selectedPlatforms.length + (difficultyFilter !== 'all' ? 1 : 0) + (durationFilter !== 'all' ? 1 : 0);
 
     return (
         <div className="relative" ref={ref}>
@@ -62,7 +89,7 @@ export function PlatformFilter({ selectedPlatforms, onPlatformChange, isLoading 
                 }}
             >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
-                Platforms
+                Filters
                 {activeCount > 0 && (
                     <span className="flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold text-white"
                         style={{ background: 'var(--accent)' }}>
@@ -86,7 +113,7 @@ export function PlatformFilter({ selectedPlatforms, onPlatformChange, isLoading 
                         style={{ borderColor: 'var(--border)', background: 'var(--bg-card-hover)' }}>
                         <span className="text-[11px] font-bold tracking-wider"
                             style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-muted)' }}>
-                            FILTER BY PLATFORM
+                            GLOBAL FILTERS
                         </span>
                         {activeCount > 0 && (
                             <button onClick={clearAll}
@@ -124,6 +151,36 @@ export function PlatformFilter({ selectedPlatforms, onPlatformChange, isLoading 
                                 </div>
                             );
                         })}
+                    </div>
+
+                    <div className="px-3 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
+                        <div className="mb-2 text-[11px] font-bold text-[var(--text-muted)]" style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+                            Difficulty
+                        </div>
+                        <select
+                            value={difficultyFilter}
+                            onChange={(e) => onDifficultyChange(e.target.value as DifficultyFilter)}
+                            className="w-full px-2 py-2 text-xs rounded-lg border"
+                            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                        >
+                            {DIFFICULTY_OPTIONS.map(o => (
+                                <option key={o.key} value={o.key}>{o.label}</option>
+                            ))}
+                        </select>
+
+                        <div className="mt-3 mb-2 text-[11px] font-bold text-[var(--text-muted)]" style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+                            Duration
+                        </div>
+                        <select
+                            value={durationFilter}
+                            onChange={(e) => onDurationChange(e.target.value as DurationFilter)}
+                            className="w-full px-2 py-2 text-xs rounded-lg border"
+                            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                        >
+                            {DURATION_OPTIONS.map(o => (
+                                <option key={o.key} value={o.key}>{o.label}</option>
+                            ))}
+                        </select>
                     </div>
                 </div>
             )}

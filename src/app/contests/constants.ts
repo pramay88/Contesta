@@ -16,6 +16,13 @@ export const PLATFORM_OPTIONS = [
     { value: 'naukri.com/code360', label: 'Code360' },
 ];
 
+export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'mixed' | 'unknown';
+
+export type DurationCategory = 'short' | 'medium' | 'long' | 'unknown';
+
+export type DifficultyFilter = DifficultyLevel | 'all';
+export type DurationFilter = DurationCategory | 'all';
+
 export interface Contest {
     event: string;
     start: string;
@@ -23,4 +30,7 @@ export interface Contest {
     resource: string;
     href: string;
     status?: string;
+    difficulty?: DifficultyLevel;
+    durationMinutes?: number;
+    durationCategory?: DurationCategory;
 }
