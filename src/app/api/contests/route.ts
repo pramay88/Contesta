@@ -30,6 +30,24 @@ interface Contest {
     status?: string;
 }
 
+function normalizeDateTime(date: string): string {
+    if (!date) return '';
+
+    // Convert formats like "2026-03-29 02:30:00" to ISO string and treat as UTC if no zone is provided
+    let normalized = date.trim().replace(' ', 'T');
+    const hasOffset = /([Zz]|[+\-]\d{2}:?\d{2})$/.test(normalized);
+    if (!hasOffset) {
+        normalized = `${normalized}Z`;
+    }
+
+    const parsed = new Date(normalized);
+    if (isNaN(parsed.getTime())) {
+        return '';
+    }
+
+    return parsed.toISOString();
+}
+
 // Generate date range based on month and year
 function getDateRange(month?: number, year?: number) {
     const now = new Date();
@@ -74,8 +92,8 @@ async function fetchClistContests(month?: number, year?: number): Promise<Contes
 
         return (data.objects || []).map((c: Record<string, string>) => ({
             event: c.event || '',
-            start: c.start || '',
-            end: c.end || '',
+            start: normalizeDateTime(c.start || ''),
+            end: normalizeDateTime(c.end || ''),
             resource: c.resource || '',
             href: c.href || '',
         }));
@@ -107,8 +125,8 @@ async function fetchGfgContests(): Promise<Contest[]> {
 
         return [...upcoming, ...past].map((c) => ({
             event: c.name || '',
-            start: c.start_time || '',
-            end: c.end_time || '',
+            start: normalizeDateTime(c.start_time || ''),
+            end: normalizeDateTime(c.end_time || ''),
             resource: 'geeksforgeeks.org',
             href: `https://practice.geeksforgeeks.org/contest/${c.slug}`,
             status: c.status || '',
