@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getWithSWR, getHackathonsCacheKey } from '@/lib/cache';
 
 interface Hackathon {
     id: string;
@@ -62,29 +63,41 @@ function getSampleHackathons(): Hackathon[] {
     ];
 }
 
+// Core fetch logic (used by cache layer) - exported for refresh endpoint
+export async function fetchHackathonsData(): Promise<Hackathon[]> {
+    console.log('Fetching hackathons from all platforms...');
+
+    const [unstopHackathons] = await Promise.all([
+        fetchUnstopHackathons(),
+    ]);
+
+    const sampleHackathons = getSampleHackathons();
+    return [...unstopHackathons, ...sampleHackathons];
+}
+
 export async function GET(request: NextRequest) {
     try {
-        console.log('Fetching hackathons from all platforms...');
+        // Use SWR caching strategy
+        const cacheKey = getHackathonsCacheKey();
+        const { data: hackathons, source, isStale } = await getWithSWR(
+            cacheKey,
+            fetchHackathonsData
+        );
 
-        // Fetch from all sources
-        const [unstopHackathons] = await Promise.all([
-            fetchUnstopHackathons(),
-        ]);
-
-        // Add sample data
-        const sampleHackathons = getSampleHackathons();
-
-        // Merge all hackathons
-        const allHackathons = [...unstopHackathons, ...sampleHackathons];
-
-        console.log(`Total hackathons: ${allHackathons.length}`);
+        console.log(`Total hackathons: ${hackathons.length} (source: ${source}, stale: ${isStale})`);
 
         return NextResponse.json(
-            { hackathons: allHackathons, total: allHackathons.length },
+            { 
+                hackathons, 
+                total: hackathons.length,
+                cache: { source, isStale },
+            },
             {
                 headers: {
                     'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
                     'Content-Type': 'application/json',
+                    'X-Cache-Source': source,
+                    'X-Cache-Stale': String(isStale),
                 },
             }
         );

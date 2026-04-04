@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getWithSWR, getContestsCacheKey } from '@/lib/cache';
 
 const CLIST_API_USERNAME = process.env.CLIST_API_USERNAME || '';
 const CLIST_API_KEY = process.env.CLIST_API_KEY || '';
@@ -182,6 +183,25 @@ function filterAndValidateContests(contests: Contest[], month?: number, year?: n
     });
 }
 
+// Core fetch logic (used by cache layer) - exported for refresh endpoint
+export async function fetchContestsData(month?: number, year?: number) {
+    console.log('Fetching contests for month:', month !== undefined ? month + 1 : 'current', 'year:', year ?? 'current');
+
+    const [clistContests, gfgContests] = await Promise.all([
+        fetchClistContests(month, year),
+        fetchGfgContests(),
+    ]);
+
+    console.log('Raw contests — Clist:', clistContests.length, 'GFG:', gfgContests.length);
+
+    const merged = [...clistContests, ...gfgContests];
+    const filtered = filterAndValidateContests(merged, month, year);
+
+    return filtered.sort(
+        (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
+    );
+}
+
 export async function GET(request: NextRequest) {
     try {
         const searchParams = request.nextUrl.searchParams;
@@ -191,35 +211,27 @@ export async function GET(request: NextRequest) {
         const month = monthParam ? parseInt(monthParam) - 1 : undefined; // Convert to 0-indexed
         const year = yearParam ? parseInt(yearParam) : undefined;
 
-        console.log('Fetching contests for month:', month !== undefined ? month + 1 : 'current', 'year:', year ?? 'current');
-
-        // Fetch contests in parallel — Next.js fetch() handles caching via revalidate
-        const [clistContests, gfgContests] = await Promise.all([
-            fetchClistContests(month, year),
-            fetchGfgContests(),
-        ]);
-
-        console.log('Raw contests — Clist:', clistContests.length, 'GFG:', gfgContests.length);
-
-        const merged = [...clistContests, ...gfgContests];
-        const filtered = filterAndValidateContests(merged, month, year);
-
-        const sorted = filtered.sort(
-            (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
+        // Use SWR caching strategy
+        const cacheKey = getContestsCacheKey(month, year);
+        const { data: contests, source, isStale } = await getWithSWR(
+            cacheKey,
+            () => fetchContestsData(month, year)
         );
 
-        console.log('Returning', sorted.length, 'contests');
+        console.log(`Returning ${contests.length} contests (source: ${source}, stale: ${isStale})`);
 
         return NextResponse.json(
             {
-                contests: sorted,
+                contests,
                 timestamp: new Date().toISOString(),
+                cache: { source, isStale },
             },
             {
                 headers: {
-                    // Tell CDNs/browsers to cache for 5 min, serve stale for up to 10 min while revalidating
                     'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
                     'Content-Type': 'application/json',
+                    'X-Cache-Source': source,
+                    'X-Cache-Stale': String(isStale),
                 },
             }
         );
