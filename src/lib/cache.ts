@@ -1,10 +1,20 @@
 import { Redis } from '@upstash/redis';
 
-// Initialize Redis client (uses UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN env vars)
-const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL!,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+// Lazy-initialize Redis client to avoid errors when env vars aren't set
+let redis: Redis | null = null;
+
+function getRedis(): Redis | null {
+    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+        return null;
+    }
+    if (!redis) {
+        redis = new Redis({
+            url: process.env.UPSTASH_REDIS_REST_URL,
+            token: process.env.UPSTASH_REDIS_REST_TOKEN,
+        });
+    }
+    return redis;
+}
 
 // Cache configuration
 const CACHE_CONFIG = {
@@ -37,9 +47,10 @@ export async function getWithSWR<T>(
     options?: { forceFresh?: boolean }
 ): Promise<CacheResult<T>> {
     const now = Date.now();
+    const redisClient = getRedis();
 
     // Check if Redis is configured
-    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    if (!redisClient) {
         console.warn('Upstash Redis not configured, fetching directly');
         const data = await fetchFn();
         return { data, source: 'fetch', isStale: false };
@@ -52,7 +63,7 @@ export async function getWithSWR<T>(
         }
 
         // Try to get cached data
-        const cached = await redis.get<CacheEntry<T>>(key);
+        const cached = await redisClient.get<CacheEntry<T>>(key);
 
         if (cached) {
             const isFresh = now < cached.freshUntil;
@@ -92,6 +103,7 @@ async function fetchAndCache<T>(
     key: string,
     fetchFn: () => Promise<T>
 ): Promise<CacheResult<T>> {
+    const redisClient = getRedis();
     const data = await fetchFn();
     const now = Date.now();
 
@@ -102,8 +114,10 @@ async function fetchAndCache<T>(
     };
 
     // Store with total TTL (fresh + stale window)
-    await redis.set(key, entry, { ex: CACHE_CONFIG.STALE_TTL });
-    console.log(`Cached: ${key} (TTL: ${CACHE_CONFIG.STALE_TTL}s)`);
+    if (redisClient) {
+        await redisClient.set(key, entry, { ex: CACHE_CONFIG.STALE_TTL });
+        console.log(`Cached: ${key} (TTL: ${CACHE_CONFIG.STALE_TTL}s)`);
+    }
 
     return { data, source: 'fetch', isStale: false };
 }
@@ -115,10 +129,13 @@ async function triggerBackgroundRefresh<T>(
     key: string,
     fetchFn: () => Promise<T>
 ): Promise<void> {
+    const redisClient = getRedis();
+    if (!redisClient) return;
+
     const lockKey = `${CACHE_CONFIG.STALE_MARKER_PREFIX}${key}`;
 
     // Try to acquire lock (30 second TTL)
-    const acquired = await redis.set(lockKey, '1', { ex: 30, nx: true });
+    const acquired = await redisClient.set(lockKey, '1', { ex: 30, nx: true });
 
     if (!acquired) {
         console.log(`Background refresh already in progress for: ${key}`);
@@ -135,11 +152,11 @@ async function triggerBackgroundRefresh<T>(
             freshUntil: now + CACHE_CONFIG.FRESH_TTL * 1000,
         };
 
-        await redis.set(key, entry, { ex: CACHE_CONFIG.STALE_TTL });
+        await redisClient.set(key, entry, { ex: CACHE_CONFIG.STALE_TTL });
         console.log(`Background refresh complete: ${key}`);
     } finally {
         // Release lock
-        await redis.del(lockKey);
+        await redisClient.del(lockKey);
     }
 }
 
@@ -147,17 +164,18 @@ async function triggerBackgroundRefresh<T>(
  * Invalidate cache entries by pattern or specific key
  */
 export async function invalidateCache(keys: string[]): Promise<number> {
-    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    const redisClient = getRedis();
+    if (!redisClient) {
         return 0;
     }
 
     try {
         let deleted = 0;
         for (const key of keys) {
-            const result = await redis.del(key);
+            const result = await redisClient.del(key);
             deleted += result;
             // Also delete any stale marker
-            await redis.del(`${CACHE_CONFIG.STALE_MARKER_PREFIX}${key}`);
+            await redisClient.del(`${CACHE_CONFIG.STALE_MARKER_PREFIX}${key}`);
         }
         console.log(`Invalidated ${deleted} cache entries`);
         return deleted;
@@ -194,4 +212,57 @@ export function getAllCacheKeys(month?: number, year?: number): string[] {
     ];
 }
 
-export { redis };
+// Rate limiting configuration
+const RATE_LIMIT_CONFIG = {
+    WINDOW_SECONDS: 60,      // 1 minute window
+    MAX_REQUESTS: 3,         // Max 3 refresh requests per minute per IP
+    PREFIX: 'ratelimit:refresh:',
+};
+
+interface RateLimitResult {
+    allowed: boolean;
+    remaining: number;
+    resetIn: number; // seconds until reset
+}
+
+/**
+ * Check rate limit for an identifier (e.g., IP address)
+ */
+export async function checkRateLimit(identifier: string): Promise<RateLimitResult> {
+    const redisClient = getRedis();
+    
+    // If Redis not configured, allow all requests
+    if (!redisClient) {
+        return { allowed: true, remaining: RATE_LIMIT_CONFIG.MAX_REQUESTS, resetIn: 0 };
+    }
+
+    const key = `${RATE_LIMIT_CONFIG.PREFIX}${identifier}`;
+    
+    try {
+        // Increment counter
+        const count = await redisClient.incr(key);
+        
+        // Set expiry on first request
+        if (count === 1) {
+            await redisClient.expire(key, RATE_LIMIT_CONFIG.WINDOW_SECONDS);
+        }
+        
+        // Get TTL for reset time
+        const ttl = await redisClient.ttl(key);
+        
+        const allowed = count <= RATE_LIMIT_CONFIG.MAX_REQUESTS;
+        const remaining = Math.max(0, RATE_LIMIT_CONFIG.MAX_REQUESTS - count);
+        
+        return {
+            allowed,
+            remaining,
+            resetIn: ttl > 0 ? ttl : RATE_LIMIT_CONFIG.WINDOW_SECONDS,
+        };
+    } catch (error) {
+        console.error('Rate limit check error:', error);
+        // On error, allow the request
+        return { allowed: true, remaining: RATE_LIMIT_CONFIG.MAX_REQUESTS, resetIn: 0 };
+    }
+}
+
+export { getRedis };

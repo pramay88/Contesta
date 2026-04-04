@@ -1,12 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { invalidateCache, getContestsCacheKey, getHackathonsCacheKey, getWithSWR } from '@/lib/cache';
+import { invalidateCache, getContestsCacheKey, getHackathonsCacheKey, getWithSWR, checkRateLimit } from '@/lib/cache';
 
 // Optional: Add a secret token for security (set CACHE_REFRESH_TOKEN in env)
 const REFRESH_TOKEN = process.env.CACHE_REFRESH_TOKEN;
 
 /**
+ * Get client IP for rate limiting
+ */
+function getClientIP(request: NextRequest): string {
+    // Vercel/Cloudflare headers
+    const forwarded = request.headers.get('x-forwarded-for');
+    if (forwarded) {
+        return forwarded.split(',')[0].trim();
+    }
+    const realIp = request.headers.get('x-real-ip');
+    if (realIp) {
+        return realIp;
+    }
+    return 'unknown';
+}
+
+/**
  * POST /api/refresh
  * Manually invalidate and rebuild the cache
+ * 
+ * Rate limited: 3 requests per minute per IP
  * 
  * Query params:
  * - type: 'contests' | 'hackathons' | 'all' (default: 'all')
@@ -15,19 +33,34 @@ const REFRESH_TOKEN = process.env.CACHE_REFRESH_TOKEN;
  * - rebuild: 'true' to fetch fresh data immediately (default: just invalidate)
  * 
  * Headers:
- * - Authorization: Bearer <CACHE_REFRESH_TOKEN> (if token is configured)
+ * - Authorization: Bearer <CACHE_REFRESH_TOKEN> (if token is configured, bypasses rate limit)
  */
 export async function POST(request: NextRequest) {
     try {
-        // Verify authorization if token is configured
-        if (REFRESH_TOKEN) {
-            const authHeader = request.headers.get('authorization');
-            const token = authHeader?.replace('Bearer ', '');
+        const clientIP = getClientIP(request);
+        const authHeader = request.headers.get('authorization');
+        const token = authHeader?.replace('Bearer ', '');
+        const hasValidToken = REFRESH_TOKEN && token === REFRESH_TOKEN;
+
+        // Rate limit check (skip if valid token provided)
+        if (!hasValidToken) {
+            const rateLimit = await checkRateLimit(clientIP);
             
-            if (token !== REFRESH_TOKEN) {
+            if (!rateLimit.allowed) {
                 return NextResponse.json(
-                    { error: 'Unauthorized' },
-                    { status: 401 }
+                    {
+                        error: 'Rate limit exceeded',
+                        message: `Too many refresh requests. Try again in ${rateLimit.resetIn} seconds.`,
+                        resetIn: rateLimit.resetIn,
+                    },
+                    {
+                        status: 429,
+                        headers: {
+                            'Retry-After': String(rateLimit.resetIn),
+                            'X-RateLimit-Remaining': '0',
+                            'X-RateLimit-Reset': String(rateLimit.resetIn),
+                        },
+                    }
                 );
             }
         }

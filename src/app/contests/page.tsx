@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { Header } from '@/components/header';
 import { StatsHeader } from '@/components/StatsHeader';
 import { PlatformFilter } from '@/components/PlatformFilter';
@@ -31,6 +32,8 @@ export default function ContestsPage() {
         setSelectedPlatforms,
         upcomingContests,
         allCalendarEvents,
+        refreshContests,
+        refreshState,
     } = useContests(currentDate, difficultyFilter, durationFilter);
 
     const now = new Date();
@@ -73,7 +76,30 @@ export default function ContestsPage() {
                         />
                     </div>
                     
-                    <div className="flex-shrink-0 pt-0.5">
+                    <div className="flex items-center gap-2 flex-shrink-0 pt-0.5">
+                        {/* Refresh Button */}
+                        <button
+                            onClick={refreshContests}
+                            disabled={refreshState.isRefreshing || loading || isFetching}
+                            className="p-2 rounded-lg border transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{
+                                background: 'var(--bg-card)',
+                                borderColor: refreshState.error ? '#ef4444' : 'var(--border)',
+                                color: refreshState.error ? '#ef4444' : 'var(--text-muted)',
+                            }}
+                            title={
+                                refreshState.error
+                                    ? refreshState.error
+                                    : refreshState.lastRefreshed
+                                        ? `Last refreshed: ${refreshState.lastRefreshed.toLocaleTimeString()}`
+                                        : 'Refresh contests (3 per minute limit)'
+                            }
+                        >
+                            <RefreshCw
+                                className={`w-4 h-4 ${refreshState.isRefreshing ? 'animate-spin' : ''}`}
+                            />
+                        </button>
+
                         <PlatformFilter
                             selectedPlatforms={selectedPlatforms}
                             onPlatformChange={setSelectedPlatforms}

@@ -2,6 +2,13 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { isAfter, isSameDay, isBefore, startOfDay } from 'date-fns';
 import { Contest, SUPPORTED_RESOURCES, DifficultyLevel, DurationCategory, DifficultyFilter, DurationFilter } from '../constants';
 
+interface RefreshState {
+    isRefreshing: boolean;
+    lastRefreshed: Date | null;
+    error: string | null;
+    rateLimitReset: number | null;
+}
+
 export function useContests(currentDate?: Date, difficultyFilter: DifficultyFilter = 'all', durationFilter: DurationFilter = 'all') {
     const [contests, setContests] = useState<Contest[]>([]);
     // `loading` is true only on the very first fetch (no data yet)
@@ -11,6 +18,14 @@ export function useContests(currentDate?: Date, difficultyFilter: DifficultyFilt
     const [error, setError] = useState('');
     const [search, setSearch] = useState('');
     const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+
+    // Refresh state
+    const [refreshState, setRefreshState] = useState<RefreshState>({
+        isRefreshing: false,
+        lastRefreshed: null,
+        error: null,
+        rateLimitReset: null,
+    });
 
     // Track whether we have ever successfully loaded data
     const hasData = useRef(false);
@@ -47,6 +62,58 @@ export function useContests(currentDate?: Date, difficultyFilter: DifficultyFilt
             setIsFetching(false);
         }
     }, []);
+
+    // Manual refresh with cache invalidation
+    const refreshContests = useCallback(async () => {
+        if (refreshState.isRefreshing) return;
+
+        setRefreshState(prev => ({ ...prev, isRefreshing: true, error: null }));
+
+        try {
+            const targetDate = currentDate || new Date();
+            const month = targetDate.getMonth() + 1;
+            const year = targetDate.getFullYear();
+
+            // Call refresh endpoint to invalidate and rebuild cache
+            const refreshRes = await fetch(
+                `/api/refresh?type=contests&month=${month}&year=${year}&rebuild=true`,
+                { method: 'POST' }
+            );
+
+            if (refreshRes.status === 429) {
+                const data = await refreshRes.json();
+                setRefreshState(prev => ({
+                    ...prev,
+                    isRefreshing: false,
+                    error: data.message || 'Rate limit exceeded',
+                    rateLimitReset: data.resetIn || 60,
+                }));
+                return;
+            }
+
+            if (!refreshRes.ok) {
+                throw new Error('Failed to refresh cache');
+            }
+
+            // Fetch fresh data
+            await fetchContests(currentDate);
+            
+            setRefreshState(prev => ({
+                ...prev,
+                isRefreshing: false,
+                lastRefreshed: new Date(),
+                error: null,
+                rateLimitReset: null,
+            }));
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Failed to refresh';
+            setRefreshState(prev => ({
+                ...prev,
+                isRefreshing: false,
+                error: message,
+            }));
+        }
+    }, [currentDate, fetchContests, refreshState.isRefreshing]);
 
     useEffect(() => {
         fetchContests(currentDate);
@@ -193,5 +260,7 @@ export function useContests(currentDate?: Date, difficultyFilter: DifficultyFilt
         upcomingContests,
         allCalendarEvents,
         today,
+        refreshContests,
+        refreshState,
     };
 }
