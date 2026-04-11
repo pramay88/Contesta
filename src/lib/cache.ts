@@ -18,8 +18,8 @@ function getRedis(): Redis | null {
 
 // Cache configuration
 const CACHE_CONFIG = {
-    FRESH_TTL: 15 * 60,      // 15 minutes - data considered fresh
-    STALE_TTL: 20 * 60,      // 20 minutes - total TTL (5 min stale window)
+    FRESH_TTL: 30 * 60,      // 30 minutes - data considered fresh
+    STALE_TTL: 35 * 60,      // 20 minutes - total TTL (5 min stale window)
     STALE_MARKER_PREFIX: 'stale:',
 };
 

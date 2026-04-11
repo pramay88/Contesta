@@ -26,131 +26,134 @@ export default function HackathonsPage() {
     const [showFilters, setShowFilters] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-            {/* Header */}
-            <div className="max-w-7xl mx-auto mb-6">
-                <div className="flex items-center justify-between mb-4">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Hackathons</h1>
-                        <p className="text-gray-600 mt-1">
-                            Discover hackathons from Devpost, Unstop, and Kaggle
-                        </p>
-                    </div>
-                    <div className="text-sm text-gray-500">
-                        {filteredCount} of {totalCount} hackathons
-                    </div>
-                </div>
+        // <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+        //     {/* Header */}
+        //     <div className="max-w-7xl mx-auto mb-6">
+        //         <div className="flex items-center justify-between mb-4">
+        //             <div>
+        //                 <h1 className="text-3xl font-bold text-gray-900">Hackathons</h1>
+        //                 <p className="text-gray-600 mt-1">
+        //                     Discover hackathons from Devpost, Unstop, and Kaggle
+        //                 </p>
+        //             </div>
+        //             <div className="text-sm text-gray-500">
+        //                 {filteredCount} of {totalCount} hackathons
+        //             </div>
+        //         </div>
 
-                {/* Search and Filters */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                    <div className="flex flex-col md:flex-row gap-4">
-                        {/* Search */}
-                        <div className="flex-1 relative">
-                            <BsSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search hackathons..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                        </div>
+        //         {/* Search and Filters */}
+        //         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        //             <div className="flex flex-col md:flex-row gap-4">
+        //                 {/* Search */}
+        //                 <div className="flex-1 relative">
+        //                     <BsSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        //                     <input
+        //                         type="text"
+        //                         placeholder="Search hackathons..."
+        //                         value={search}
+        //                         onChange={(e) => setSearch(e.target.value)}
+        //                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        //                     />
+        //                 </div>
 
-                        {/* Filter Toggle */}
-                        <button
-                            onClick={() => setShowFilters(!showFilters)}
-                            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                        >
-                            <BsFilter className="w-5 h-5" />
-                            Filters
-                        </button>
-                    </div>
+        //                 {/* Filter Toggle */}
+        //                 <button
+        //                     onClick={() => setShowFilters(!showFilters)}
+        //                     className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+        //                 >
+        //                     <BsFilter className="w-5 h-5" />
+        //                     Filters
+        //                 </button>
+        //             </div>
 
-                    {/* Filter Options */}
-                    {showFilters && (
-                        <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {/* Platform Filter */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Platform
-                                </label>
-                                <select
-                                    value={platformFilter}
-                                    onChange={(e) => setPlatformFilter(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                >
-                                    {PLATFORM_OPTIONS.map(opt => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                    ))}
-                                </select>
-                            </div>
+        //             {/* Filter Options */}
+        //             {showFilters && (
+        //                 <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+        //                     {/* Platform Filter */}
+        //                     <div>
+        //                         <label className="block text-sm font-medium text-gray-700 mb-2">
+        //                             Platform
+        //                         </label>
+        //                         <select
+        //                             value={platformFilter}
+        //                             onChange={(e) => setPlatformFilter(e.target.value)}
+        //                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+        //                         >
+        //                             {PLATFORM_OPTIONS.map(opt => (
+        //                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
+        //                             ))}
+        //                         </select>
+        //                     </div>
 
-                            {/* Status Filter */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Status
-                                </label>
-                                <select
-                                    value={statusFilter}
-                                    onChange={(e) => setStatusFilter(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                >
-                                    {STATUS_OPTIONS.map(opt => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                    ))}
-                                </select>
-                            </div>
+        //                     {/* Status Filter */}
+        //                     <div>
+        //                         <label className="block text-sm font-medium text-gray-700 mb-2">
+        //                             Status
+        //                         </label>
+        //                         <select
+        //                             value={statusFilter}
+        //                             onChange={(e) => setStatusFilter(e.target.value)}
+        //                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+        //                         >
+        //                             {STATUS_OPTIONS.map(opt => (
+        //                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
+        //                             ))}
+        //                         </select>
+        //                     </div>
 
-                            {/* Type Filter */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Type
-                                </label>
-                                <select
-                                    value={typeFilter}
-                                    onChange={(e) => setTypeFilter(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                >
-                                    {TYPE_OPTIONS.map(opt => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
+        //                     {/* Type Filter */}
+        //                     <div>
+        //                         <label className="block text-sm font-medium text-gray-700 mb-2">
+        //                             Type
+        //                         </label>
+        //                         <select
+        //                             value={typeFilter}
+        //                             onChange={(e) => setTypeFilter(e.target.value)}
+        //                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+        //                         >
+        //                             {TYPE_OPTIONS.map(opt => (
+        //                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
+        //                             ))}
+        //                         </select>
+        //                     </div>
+        //                 </div>
+        //             )}
+        //         </div>
+        //     </div>
 
-            {/* Content */}
-            <div className="max-w-7xl mx-auto">
-                {loading && (
-                    <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                        <p className="mt-4 text-gray-600">Loading hackathons...</p>
-                    </div>
-                )}
+        //     {/* Content */}
+        //     <div className="max-w-7xl mx-auto">
+        //         {loading && (
+        //             <div className="text-center py-12">
+        //                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        //                 <p className="mt-4 text-gray-600">Loading hackathons...</p>
+        //             </div>
+        //         )}
 
-                {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-                        {error}
-                    </div>
-                )}
+        //         {error && (
+        //             <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+        //                 {error}
+        //             </div>
+        //         )}
 
-                {!loading && !error && hackathons.length === 0 && (
-                    <div className="text-center py-12">
-                        <BsTrophy className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">No hackathons found</p>
-                    </div>
-                )}
+        //         {!loading && !error && hackathons.length === 0 && (
+        //             <div className="text-center py-12">
+        //                 <BsTrophy className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        //                 <p className="text-gray-600">No hackathons found</p>
+        //             </div>
+        //         )}
 
-                {!loading && !error && hackathons.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {hackathons.map(hackathon => (
-                            <HackathonCard key={hackathon.id} hackathon={hackathon} />
-                        ))}
-                    </div>
-                )}
-            </div>
+        //         {!loading && !error && hackathons.length > 0 && (
+        //             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        //                 {hackathons.map(hackathon => (
+        //                     <HackathonCard key={hackathon.id} hackathon={hackathon} />
+        //                 ))}
+        //             </div>
+        //         )}
+        //     </div>
+        // </div>
+        <div>
+            
         </div>
     );
 }

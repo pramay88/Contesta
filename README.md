@@ -5,6 +5,7 @@ Supports LeetCode, Codeforces, CodeChef, AtCoder, GFG and more.
 
 
 https://contests-io.vercel.app/contests
+https://conteststack.vercel.app/contests
 
 ## Environment Variables
 
