@@ -142,3 +142,13 @@ body {
 .dot-default {
   background: #6b7280;
 }
+
+@keyframes platform-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}

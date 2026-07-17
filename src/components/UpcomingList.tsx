@@ -57,7 +57,7 @@ export function UpcomingList({ contests, isLoading }: UpcomingListProps) {
                             {format(new Date(dateKey), 'PPP')}
                         </div>
                         {groupedContests[dateKey].map((contest, idx) => (
-                            <ContestCard key={`${dateKey}-${idx}`} contest={contest} />
+                            <ContestCard key={`${dateKey}-${idx}`} contest={contest} variant="compact" />
                         ))}
                     </div>
                 ))}

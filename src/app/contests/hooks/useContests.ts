@@ -30,7 +30,7 @@ export function useContests(currentDate?: Date, difficultyFilter: DifficultyFilt
     // Track whether we have ever successfully loaded data
     const hasData = useRef(false);
 
-    const fetchContests = useCallback(async (date?: Date) => {
+    const fetchContests = useCallback(async (date?: Date, signal?: AbortSignal) => {
         // Only show the full skeleton on the very first load
         if (!hasData.current) {
             setLoading(true);
@@ -43,14 +43,17 @@ export function useContests(currentDate?: Date, difficultyFilter: DifficultyFilt
             const year = targetDate.getFullYear();
 
             const url = `/api/contests?month=${month}&year=${year}`;
-            console.log('Fetching contests from:', url);
 
-            const res = await fetch(url);
+            const res = await fetch(url, { signal });
             if (!res.ok) throw new Error('Failed to fetch contests');
             const data = await res.json();
             setContests(data.contests || []);
             hasData.current = true;
         } catch (err: unknown) {
+            if (signal?.aborted) {
+                return;
+            }
+
             const message = err instanceof Error ? err.message : 'Failed to fetch contests';
             setError(message);
             // Only clear displayed data if we have nothing to show
@@ -58,8 +61,10 @@ export function useContests(currentDate?: Date, difficultyFilter: DifficultyFilt
                 setContests([]);
             }
         } finally {
-            setLoading(false);
-            setIsFetching(false);
+            if (!signal?.aborted) {
+                setLoading(false);
+                setIsFetching(false);
+            }
         }
     }, []);
 
@@ -97,7 +102,7 @@ export function useContests(currentDate?: Date, difficultyFilter: DifficultyFilt
 
             // Fetch fresh data
             await fetchContests(currentDate);
-            
+
             setRefreshState(prev => ({
                 ...prev,
                 isRefreshing: false,
@@ -116,10 +121,16 @@ export function useContests(currentDate?: Date, difficultyFilter: DifficultyFilt
     }, [currentDate, fetchContests, refreshState.isRefreshing]);
 
     useEffect(() => {
-        fetchContests(currentDate);
+        const controller = new AbortController();
+
+        void fetchContests(currentDate, controller.signal);
+
+        return () => {
+            controller.abort();
+        };
     }, [fetchContests, currentDate]);
 
-    const today = startOfDay(new Date());
+    const today = useMemo(() => startOfDay(new Date()), []);
 
     const classifyDifficulty = (c: Contest): DifficultyLevel => {
         const title = (c.event || '').toLowerCase();
@@ -189,8 +200,8 @@ export function useContests(currentDate?: Date, difficultyFilter: DifficultyFilt
 
     const filteredContests = useMemo(() => {
         return contests.filter((c) => {
-            const resource = c.resource?.toLowerCase();
-            const matchesSupported = SUPPORTED_RESOURCES.includes(resource);
+            const resource = c.resource?.toLowerCase() ?? '';
+            const matchesSupported = SUPPORTED_RESOURCES.includes(resource as (typeof SUPPORTED_RESOURCES)[number]);
             const matchesPlatform =
                 selectedPlatforms.length === 0 ||
                 selectedPlatforms.includes(resource);
@@ -245,7 +256,7 @@ export function useContests(currentDate?: Date, difficultyFilter: DifficultyFilt
                     bgColor,
                 };
             }),
-        [annotatedContests, today]
+        [filteredByDifficultyDuration, today]
     );
 
     return {

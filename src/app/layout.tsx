@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
+import { AppShell } from "@/components/AppShell";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -16,12 +17,18 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Contesta.io - Discover upcoming contests across platforms",
+  title: "ContestForge",
   description:
-    "Track and manage coding contests from CodeForces, LeetCode, CodeChef, AtCoder, and more. Never miss a contest with our unified calendar.",
+    "A clean, startup-quality feed for upcoming coding contests, platform stats, and calendar planning.",
   icons: {
     icon: "/contesta-logo.png",
   },
+  openGraph: {
+    title: "ContestForge",
+    description: "A clean, startup-quality feed for upcoming coding contests.",
+    type: "website",
+  },
+  metadataBase: new URL("https://contestforge.app"),
 };
 
 export default function RootLayout({
@@ -32,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
-        {children}
+        <AppShell>{children}</AppShell>
         <Analytics />
       </body>
     </html>

@@ -10,11 +10,11 @@ import {
     SiTopcoder,
 } from 'react-icons/si';
 import { FaUserGraduate, FaCode } from 'react-icons/fa6';
+import { getPlatformDefinition } from '@/lib/platforms';
 
-// Simple inline AtCoder icon instead of separate file
 function AtCoderIcon({ className = 'w-5 h-5' }: { className?: string }) {
     return (
-        <svg className={className} viewBox="0 0 512 512" fill="none">
+        <svg className={className} viewBox="0 0 512 512" fill="none" aria-hidden="true">
             <rect width="512" height="512" fill="white" />
             <path
                 d="M380.5 256c0-68.8-55.7-124.5-124.5-124.5S131.5 187.2 131.5 256 187.2 380.5 256 380.5 380.5 324.8 380.5 256z"
@@ -44,32 +44,33 @@ interface PlatformIconProps {
     className?: string;
 }
 
+const PLATFORM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+    'leetcode.com': SiLeetcode,
+    'codeforces.com': SiCodeforces,
+    'codechef.com': SiCodechef,
+    'geeksforgeeks.org': SiGeeksforgeeks,
+    'hackerrank.com': SiHackerrank,
+    'hackerearth.com': SiHackerearth,
+    'interviewbit.com': FaUserGraduate,
+    'codingninjas.com': FaCode,
+    'kaggle.com': SiKaggle,
+    'topcoder.com': SiTopcoder,
+    'atcoder.jp': AtCoderIcon,
+    'naukri.com/code360': FaCode,
+    devpost: FaCode,
+    'devpost.com': FaCode,
+    unstop: FaUserGraduate,
+    'unstop.com': FaUserGraduate,
+    kaggle: SiKaggle,
+};
+
 export function PlatformIcon({ resource, className = 'w-5 h-5' }: PlatformIconProps) {
-    const r = resource?.toLowerCase();
+    const normalized = resource?.toLowerCase().trim();
 
-    if (r === 'leetcode.com')
-        return <SiLeetcode className={`${className} text-yellow-500`} />;
-    if (r === 'codeforces.com')
-        return <SiCodeforces className={`${className} text-blue-500`} />;
-    if (r === 'codechef.com')
-        return <SiCodechef className={`${className} text-purple-700`} />;
-    if (r === 'geeksforgeeks.org')
-        return <SiGeeksforgeeks className={`${className} text-green-600`} />;
-    if (r === 'hackerrank.com')
-        return <SiHackerrank className={`${className} text-green-700`} />;
-    if (r === 'hackerearth.com')
-        return <SiHackerearth className={`${className} text-blue-900`} />;
-    if (r === 'interviewbit.com')
-        return <FaUserGraduate className={`${className} text-indigo-600`} />;
-    if (r === 'codingninjas.com')
-        return <FaCode className={`${className} text-orange-600`} />;
-    if (r === 'kaggle.com')
-        return <SiKaggle className={`${className} text-cyan-500`} />;
-    if (r === 'topcoder.com')
-        return <SiTopcoder className={`${className} text-red-600`} />;
-    if (r === 'atcoder.jp') return <AtCoderIcon className={className} />;
-    if (r === 'naukri.com/code360')
-        return <FaCode className={`${className} text-purple-600`} />;
+    if (!normalized || !getPlatformDefinition(normalized)) {
+        return null;
+    }
 
-    return null;
+    const Icon = PLATFORM_ICONS[normalized] ?? FaCode;
+    return <Icon className={className} />;
 }

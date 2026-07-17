@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { PLATFORM_OPTIONS, DifficultyFilter, DurationFilter } from '@/app/contests/constants';
 import { PlatformIcon } from './PlatformIcon';
 import { SlidersHorizontal, Check, X } from 'lucide-react';
+import { getPlatformColor } from '@/lib/platforms';
 
 interface PlatformFilterProps {
     selectedPlatforms: string[];
@@ -12,20 +13,6 @@ interface PlatformFilterProps {
     onDurationChange: (value: DurationFilter) => void;
     isLoading: boolean;
 }
-
-const PLATFORM_COLORS: Record<string, string> = {
-    'leetcode.com': '#f89f1b',
-    'codeforces.com': '#3b82f6',
-    'codechef.com': '#7c3aed',
-    'atcoder.jp': '#0ea5e9',
-    'hackerrank.com': '#22c55e',
-    'hackerearth.com': '#6366f1',
-    'geeksforgeeks.org': '#16a34a',
-    'kaggle.com': '#06b6d4',
-    'topcoder.com': '#ef4444',
-    'interviewbit.com': '#8b5cf6',
-    'codingninjas.com': '#f97316',
-};
 
 const DIFFICULTY_OPTIONS: { key: DifficultyFilter; label: string }[] = [
     { key: 'all', label: 'All Difficulty' },
@@ -128,7 +115,7 @@ export function PlatformFilter({ selectedPlatforms, onPlatformChange, difficulty
                     <div className="p-1.5 flex flex-col gap-0.5 max-h-72 overflow-y-auto">
                         {PLATFORM_OPTIONS.map(opt => {
                             const isActive = selectedPlatforms.includes(opt.value);
-                            const color = PLATFORM_COLORS[opt.value] ?? '#6b7280';
+                            const color = getPlatformColor(opt.value);
                             return (
                                 <div
                                     key={opt.value}
@@ -139,11 +126,11 @@ export function PlatformFilter({ selectedPlatforms, onPlatformChange, difficulty
                                     onMouseLeave={e => { e.currentTarget.style.background = isActive ? `${color}14` : 'transparent'; }}
                                 >
                                     {/* Checkbox */}
-                                    <div className="w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all"
+                                    <div className="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all"
                                         style={{ borderColor: isActive ? color : 'var(--border)', background: isActive ? color : 'transparent' }}>
                                         {isActive && <Check className="w-2.5 h-2.5 text-white" />}
                                     </div>
-                                    <PlatformIcon resource={opt.value} className="w-3.5 h-3.5 flex-shrink-0" />
+                                    <PlatformIcon resource={opt.value} className="w-3.5 h-3.5 shrink-0" />
                                     <span className="text-xs font-medium"
                                         style={{ color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)', fontFamily: 'var(--font-inter), sans-serif' }}>
                                         {opt.label}
@@ -154,7 +141,7 @@ export function PlatformFilter({ selectedPlatforms, onPlatformChange, difficulty
                     </div>
 
                     <div className="px-3 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
-                        <div className="mb-2 text-[11px] font-bold text-[var(--text-muted)]" style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+                        <div className="mb-2 text-xs font-bold text-gray-500" style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
                             Difficulty
                         </div>
                         <select
@@ -168,7 +155,7 @@ export function PlatformFilter({ selectedPlatforms, onPlatformChange, difficulty
                             ))}
                         </select>
 
-                        <div className="mt-3 mb-2 text-[11px] font-bold text-[var(--text-muted)]" style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+                        <div className="mt-3 mb-2 text-xs font-bold text-gray-500" style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
                             Duration
                         </div>
                         <select

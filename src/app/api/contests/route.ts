@@ -1,26 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getWithSWR, getContestsCacheKey } from '@/lib/cache';
+import { normalizeContestResource, SUPPORTED_RESOURCES } from '@/app/contests/constants';
 
 const CLIST_API_USERNAME = process.env.CLIST_API_USERNAME || '';
 const CLIST_API_KEY = process.env.CLIST_API_KEY || '';
 
-// Request specific resources from Clist API (only platforms with active data)
-const CLIST_RESOURCE_IDS = [
-    'leetcode.com',
-    'codeforces.com',
-    'codechef.com',
-    'atcoder.jp',
-    'naukri.com/code360',
-];
-
-const SUPPORTED_RESOURCES = [
-    'leetcode.com',
-    'codeforces.com',
-    'codechef.com',
-    'geeksforgeeks.org',
-    'atcoder.jp',
-    'naukri.com/code360',
-];
+// Request only platforms with active contest data.
+const CLIST_RESOURCE_IDS = SUPPORTED_RESOURCES.filter((resource) => resource !== 'geeksforgeeks.org');
 
 interface Contest {
     event: string;
@@ -89,7 +75,6 @@ async function fetchClistContests(month?: number, year?: number): Promise<Contes
         }
 
         const data = await res.json();
-        console.log('Clist API returned:', data.objects?.length ?? 0, 'contests');
 
         return (data.objects || []).map((c: Record<string, string>) => ({
             event: c.event || '',
@@ -122,8 +107,6 @@ async function fetchGfgContests(): Promise<Contest[]> {
         const upcoming: Record<string, string>[] = raw?.results?.upcoming || [];
         const past: Record<string, string>[] = raw?.results?.past || [];
 
-        console.log('GFG API returned:', upcoming.length + past.length, 'contests');
-
         return [...upcoming, ...past].map((c) => ({
             event: c.name || '',
             start: normalizeDateTime(c.start_time || ''),
@@ -138,61 +121,47 @@ async function fetchGfgContests(): Promise<Contest[]> {
     }
 }
 
-function normalizeResource(resource: string): string {
-    const normalized = resource.toLowerCase().trim();
-
-    if (normalized.includes('leetcode')) return 'leetcode.com';
-    if (normalized.includes('codeforces')) return 'codeforces.com';
-    if (normalized.includes('codechef')) return 'codechef.com';
-    if (normalized.includes('geeksforgeeks') || normalized.includes('gfg')) return 'geeksforgeeks.org';
-    if (normalized.includes('atcoder')) return 'atcoder.jp';
-    if (normalized.includes('hackerrank')) return 'hackerrank.com';
-    if (normalized.includes('hackerearth')) return 'hackerearth.com';
-    if (normalized.includes('interviewbit')) return 'interviewbit.com';
-    if (normalized.includes('codingninjas') || normalized.includes('codestudio')) return 'codingninjas.com';
-    if (normalized.includes('kaggle')) return 'kaggle.com';
-    if (normalized.includes('topcoder')) return 'topcoder.com';
-
-    return normalized;
-}
-
 function filterAndValidateContests(contests: Contest[], month?: number, year?: number): Contest[] {
     const dateRange = getDateRange(month, year);
     const startOfMonth = new Date(dateRange.start);
     const endOfMonth = new Date(dateRange.end);
 
-    return contests.filter((c) => {
-        if (!c.event || !c.start || !c.end || !c.resource) return false;
-
-        const normalizedResource = normalizeResource(c.resource);
-        if (!SUPPORTED_RESOURCES.includes(normalizedResource)) return false;
-
-        c.resource = normalizedResource;
-
-        try {
-            const start = new Date(c.start);
-            const end = new Date(c.end);
-
-            if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
-
-            // Include contests that overlap with the month
-            return start <= endOfMonth && end >= startOfMonth;
-        } catch {
-            return false;
+    return contests.flatMap((contest) => {
+        if (!contest.event || !contest.start || !contest.end || !contest.resource) {
+            return [];
         }
+
+        const normalizedResource = normalizeContestResource(contest.resource);
+        if (!normalizedResource) {
+            return [];
+        }
+
+        const start = new Date(contest.start);
+        const end = new Date(contest.end);
+
+        if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+            return [];
+        }
+
+        if (start > endOfMonth || end < startOfMonth) {
+            return [];
+        }
+
+        return [
+            {
+                ...contest,
+                resource: normalizedResource,
+            },
+        ];
     });
 }
 
 // Core fetch logic (used by cache layer) - exported for refresh endpoint
 export async function fetchContestsData(month?: number, year?: number) {
-    console.log('Fetching contests for month:', month !== undefined ? month + 1 : 'current', 'year:', year ?? 'current');
-
     const [clistContests, gfgContests] = await Promise.all([
         fetchClistContests(month, year),
         fetchGfgContests(),
     ]);
-
-    console.log('Raw contests — Clist:', clistContests.length, 'GFG:', gfgContests.length);
 
     const merged = [...clistContests, ...gfgContests];
     const filtered = filterAndValidateContests(merged, month, year);
@@ -217,8 +186,6 @@ export async function GET(request: NextRequest) {
             cacheKey,
             () => fetchContestsData(month, year)
         );
-
-        console.log(`Returning ${contests.length} contests (source: ${source}, stale: ${isStale})`);
 
         return NextResponse.json(
             {

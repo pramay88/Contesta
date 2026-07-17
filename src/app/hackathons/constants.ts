@@ -1,18 +1,12 @@
-// Hackathon constants and types
+import { getPlatformIds, getPlatformOptions, type PlatformIdsForContext } from '@/lib/platforms';
 
-export const HACKATHON_PLATFORMS = [
-    'devpost',
-    'unstop',
-    'kaggle',
-] as const;
+export const HACKATHON_PLATFORMS = getPlatformIds('hackathon');
 
-export type HackathonPlatform = typeof HACKATHON_PLATFORMS[number];
+export type HackathonPlatform = PlatformIdsForContext<'hackathon'>;
 
-export const PLATFORM_OPTIONS = [
+export const PLATFORM_OPTIONS: ReadonlyArray<{ value: 'all' | HackathonPlatform; label: string }> = [
     { value: 'all', label: 'All Platforms' },
-    { value: 'devpost', label: 'Devpost' },
-    { value: 'unstop', label: 'Unstop' },
-    { value: 'kaggle', label: 'Kaggle' },
+    ...getPlatformOptions('hackathon'),
 ];
 
 export const STATUS_OPTIONS = [
@@ -33,14 +27,14 @@ export interface Hackathon {
     id: string;
     title: string;
     url: string;
-    platform: 'devpost' | 'unstop' | 'kaggle';
+    platform: HackathonPlatform;
 
     eventStart: string;
     eventEnd: string;
     registrationEnd?: string;
 
-    status: 'upcoming' | 'live' | 'closed' | 'judging';
-    type: 'online' | 'in-person' | 'hybrid';
+    status: HackathonStatus;
+    type: HackathonType;
     isPaid: boolean;
 
     location?: {
@@ -58,3 +52,6 @@ export interface Hackathon {
     thumbnail?: string;
     description?: string;
 }
+
+export type HackathonStatus = 'upcoming' | 'live' | 'closed' | 'judging';
+export type HackathonType = 'online' | 'in-person' | 'hybrid';

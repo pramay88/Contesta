@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Hackathon } from './constants';
+import { filterHackathons } from '@/lib/hackathons';
 
 export function useHackathons() {
     const [hackathons, setHackathons] = useState<Hackathon[]>([]);
@@ -13,49 +14,52 @@ export function useHackathons() {
     const [typeFilter, setTypeFilter] = useState('all');
 
     useEffect(() => {
-        fetchHackathons();
+        const controller = new AbortController();
+
+        async function fetchHackathons() {
+            setLoading(true);
+            setError('');
+
+            try {
+                const res = await fetch('/api/hackathons', { signal: controller.signal });
+
+                if (!res.ok) {
+                    throw new Error('Failed to fetch hackathons');
+                }
+
+                const data: { hackathons?: Hackathon[] } = await res.json();
+                setHackathons(data.hackathons ?? []);
+            } catch (err: unknown) {
+                if (controller.signal.aborted) {
+                    return;
+                }
+
+                setHackathons([]);
+                setError(err instanceof Error ? err.message : 'Failed to fetch hackathons');
+            } finally {
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        void fetchHackathons();
+
+        return () => {
+            controller.abort();
+        };
     }, []);
 
-    async function fetchHackathons() {
-        setLoading(true);
-        setError('');
-        try {
-            const res = await fetch('/api/hackathons');
-            if (!res.ok) throw new Error('Failed to fetch hackathons');
-            const data = await res.json();
-            setHackathons(data.hackathons || []);
-        } catch (err: any) {
-            setError(err.message || 'Failed to fetch hackathons');
-            setHackathons([]);
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    // Filter hackathons
-    const filteredHackathons = hackathons.filter(h => {
-        // Search filter
-        if (search && !h.title.toLowerCase().includes(search.toLowerCase())) {
-            return false;
-        }
-
-        // Platform filter
-        if (platformFilter !== 'all' && h.platform !== platformFilter) {
-            return false;
-        }
-
-        // Status filter
-        if (statusFilter !== 'all' && h.status !== statusFilter) {
-            return false;
-        }
-
-        // Type filter
-        if (typeFilter !== 'all' && h.type !== typeFilter) {
-            return false;
-        }
-
-        return true;
-    });
+    const filteredHackathons = useMemo(
+        () =>
+            filterHackathons(hackathons, {
+                search,
+                platform: platformFilter as Hackathon['platform'] | 'all',
+                status: statusFilter as 'all' | Hackathon['status'],
+                type: typeFilter as 'all' | Hackathon['type'],
+            }),
+        [hackathons, search, platformFilter, statusFilter, typeFilter]
+    );
 
     return {
         hackathons: filteredHackathons,

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export function ThemeToggle() {
     const [dark, setDark] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
-    // Initialize the theme from localStorage or system preference
     useEffect(() => {
+        setMounted(true);
         const stored = localStorage.getItem('theme');
         if (stored === 'dark') {
             setDark(true);
@@ -31,6 +32,16 @@ export function ThemeToggle() {
             localStorage.setItem('theme', 'light');
         }
     };
+
+    if (!mounted) {
+        return (
+            <span
+                className="flex items-center justify-center w-9 h-9 rounded-lg border"
+                style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+                aria-hidden="true"
+            />
+        );
+    }
 
     return (
         <button

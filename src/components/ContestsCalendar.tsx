@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { PlatformIcon } from './PlatformIcon';
 import { format } from 'date-fns';
 import { ExternalLink, CalendarPlus } from 'lucide-react';
+import { buildGoogleCalendarUrl, formatContestDuration, getContestPlatformMeta } from '@/lib/contest-utils';
 
 interface CalendarEvent {
     id: number;
@@ -23,47 +24,6 @@ interface CalendarViewProps {
     onNavigate: (date: Date) => void;
     selectedDate?: Date | null;
     onSelectSlot?: (slotInfo: { start: Date; end: Date }) => void;
-}
-
-const PLATFORM_DOT: Record<string, string> = {
-    'leetcode.com': '#f89f1b',
-    'codeforces.com': '#3b82f6',
-    'codechef.com': '#7c3aed',
-    'atcoder.jp': '#0ea5e9',
-    'hackerrank.com': '#22c55e',
-    'hackerearth.com': '#6366f1',
-    'geeksforgeeks.org': '#16a34a',
-    'kaggle.com': '#06b6d4',
-    'topcoder.com': '#ef4444',
-    'interviewbit.com': '#8b5cf6',
-    'codingninjas.com': '#f97316',
-    'naukri.com/code360': '#a855f7',
-};
-
-function getPlatformLabel(resource: string): string {
-    const map: Record<string, string> = {
-        'leetcode.com': 'LeetCode',
-        'codeforces.com': 'Codeforces',
-        'codechef.com': 'CodeChef',
-        'atcoder.jp': 'AtCoder',
-        'hackerrank.com': 'HackerRank',
-        'hackerearth.com': 'HackerEarth',
-        'geeksforgeeks.org': 'GFG',
-        'kaggle.com': 'Kaggle',
-        'topcoder.com': 'TopCoder',
-        'interviewbit.com': 'InterviewBit',
-        'codingninjas.com': 'CodeStudio',
-        'naukri.com/code360': 'Code360',
-    };
-    return map[resource] || resource;
-}
-
-function generateGCalUrl(ev: CalendarEvent): string {
-    const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    const platform = getPlatformLabel(ev.resource);
-    const title = `[${platform}] ${ev.title}`;
-    const details = `Contest link: ${ev.url}`;
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${fmt(new Date(ev.start))}/${fmt(new Date(ev.end))}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(ev.url)}`;
 }
 
 // Day detail panel — shown in a fixed corner after clicking a day
@@ -88,29 +48,29 @@ function DayPanel({ events, date, onClose }: { events: CalendarEvent[]; date: Da
     return (
         <div
             ref={ref}
-            className="fixed bottom-4 right-4 z-[9999] w-80 max-h-[70vh] flex flex-col rounded-2xl overflow-hidden shadow-2xl"
+            className="fixed bottom-4 right-4 z-9999 w-80 max-h-[70vh] flex flex-col rounded-2xl overflow-hidden shadow-2xl"
             style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
         >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0"
-                 style={{ borderColor: 'var(--border)', background: 'var(--bg-card-hover)' }}>
+            <div className="flex items-center justify-between px-4 py-3 border-b shrink-0"
+                style={{ borderColor: 'var(--border)', background: 'var(--bg-card-hover)' }}>
                 <div>
                     <div className="text-[11px] font-bold tracking-wider"
-                         style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-muted)' }}>
+                        style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-muted)' }}>
                         {format(date, 'EEEE').toUpperCase()}
                     </div>
                     <div className="text-sm font-bold"
-                         style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-primary)' }}>
+                        style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-primary)' }}>
                         {format(date, 'MMMM d, yyyy')}
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
                     <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
-                          style={{ background: 'var(--accent-light)', color: 'var(--accent)', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+                        style={{ background: 'var(--accent-light)', color: 'var(--accent)', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
                         {events.length} contest{events.length !== 1 ? 's' : ''}
                     </span>
                     <button onClick={onClose} className="p-1 rounded-lg"
-                            style={{ color: 'var(--text-muted)' }}>
+                        style={{ color: 'var(--text-muted)' }}>
                         <X className="w-4 h-4" />
                     </button>
                 </div>
@@ -120,51 +80,49 @@ function DayPanel({ events, date, onClose }: { events: CalendarEvent[]; date: Da
             <div className="overflow-y-auto flex-1 divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
                 {events.map(ev => {
                     const start = new Date(ev.start);
-                    const end   = new Date(ev.end);
-                    const mins  = Math.floor((end.getTime() - start.getTime()) / 60000);
-                    const h = Math.floor(mins / 60); const m = mins % 60;
-                    const duration = h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h ${m}m`;
-                    const color = PLATFORM_DOT[ev.resource] ?? '#6b7280';
+                    const end = new Date(ev.end);
+                    const duration = formatContestDuration(start, end);
+                    const platformMeta = getContestPlatformMeta(ev.resource);
 
                     return (
                         <div key={ev.id} className="px-4 py-3"
-                             style={{ background: 'var(--bg-card)' }}>
+                            style={{ background: 'var(--bg-card)' }}>
                             <div className="flex items-start gap-2.5">
-                                <div className="w-1 self-stretch rounded-full flex-shrink-0 mt-0.5"
-                                     style={{ background: color }} />
+                                <div className="w-1 self-stretch rounded-full shrink-0 mt-0.5"
+                                    style={{ background: platformMeta.color }} />
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-1.5 mb-0.5">
-                                        <PlatformIcon resource={ev.resource} className="w-3 h-3 flex-shrink-0" />
+                                        <PlatformIcon resource={ev.resource} className="w-3 h-3 shrink-0" />
                                         <span className="text-[10px] font-bold"
-                                              style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color }}>
-                                            {getPlatformLabel(ev.resource)}
+                                            style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: platformMeta.color }}>
+                                            {platformMeta.label}
                                         </span>
                                     </div>
                                     <p className="text-[13px] font-medium leading-snug mb-1"
-                                       style={{ color: 'var(--text-primary)' }}>
-                                        [{getPlatformLabel(ev.resource)}] {ev.title}
+                                        style={{ color: 'var(--text-primary)' }}>
+                                        [{platformMeta.label}] {ev.title}
                                     </p>
                                     <div className="text-[11px] flex items-center gap-2"
-                                         style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-muted)' }}>
+                                        style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-muted)' }}>
                                         <span>{format(start, 'hh:mm a')}</span>
                                         <span>· {duration}</span>
                                     </div>
                                 </div>
-                                <div className="flex gap-1 flex-shrink-0">
+                                <div className="flex gap-1 shrink-0">
                                     <a href={ev.url} target="_blank" rel="noopener noreferrer"
-                                       className="p-1 rounded-lg"
-                                       style={{ color: 'var(--text-muted)' }}
-                                       onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-                                       onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-                                       title="Open">
+                                        className="p-1 rounded-lg"
+                                        style={{ color: 'var(--text-muted)' }}
+                                        onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+                                        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+                                        title="Open">
                                         <ExternalLink className="w-3.5 h-3.5" />
                                     </a>
-                                    <a href={generateGCalUrl(ev)} target="_blank" rel="noopener noreferrer"
-                                       className="p-1 rounded-lg"
-                                       style={{ color: 'var(--text-muted)' }}
-                                       onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-                                       onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-                                       title="Add to Calendar">
+                                    <a href={buildGoogleCalendarUrl({ title: `[${platformMeta.label}] ${ev.title}`, start, end, details: `Contest link: ${ev.url}`, location: ev.url })} target="_blank" rel="noopener noreferrer"
+                                        className="p-1 rounded-lg"
+                                        style={{ color: 'var(--text-muted)' }}
+                                        onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+                                        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+                                        title="Add to Calendar">
                                         <CalendarPlus className="w-3.5 h-3.5" />
                                     </a>
                                 </div>
@@ -191,7 +149,7 @@ export function ContestsCalendar({ events, loading, currentDate, onNavigate, sel
     if (loading) {
         return (
             <div className="w-full rounded-2xl animate-pulse"
-                 style={{ height: 480, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+                style={{ height: 480, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
                 <div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
                     <div className="h-6 w-40 rounded-lg" style={{ background: 'var(--border)' }} />
                 </div>
@@ -257,10 +215,10 @@ export function ContestsCalendar({ events, loading, currentDate, onNavigate, sel
     return (
         <>
             <div className="rounded-2xl overflow-hidden"
-                 style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+                style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
                 {/* Header */}
                 <div className="px-4 py-3 flex items-center justify-between border-b"
-                     style={{ borderColor: 'var(--border)' }}>
+                    style={{ borderColor: 'var(--border)' }}>
                     <h2 className="text-base font-bold"
                         style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-primary)' }}>
                         {MONTH_NAMES[currentDate.getMonth()]} {currentDate.getFullYear()}
@@ -311,7 +269,7 @@ export function ContestsCalendar({ events, loading, currentDate, onNavigate, sel
                                 <div
                                     key={idx}
                                     onClick={() => handleDayClick(day, dayEvents)}
-                                    className="min-h-[80px] sm:min-h-[90px] p-1.5 rounded-xl transition-all duration-100 select-none flex flex-col gap-0.5"
+                                    className="min-h-20 sm:min-h-[90px] p-1.5 rounded-xl transition-all duration-100 select-none flex flex-col gap-0.5"
                                     style={{
                                         background: todayFlag ? 'var(--today-bg)' : isActive ? 'var(--accent-light)' : selected ? 'var(--accent-light)' : inMonth ? 'transparent' : 'var(--border-subtle)',
                                         border: todayFlag ? '2px solid var(--today-ring)' : isActive ? '2px solid var(--accent)' : selected ? '1.5px solid var(--accent)' : '1px solid var(--border-subtle)',
@@ -328,25 +286,24 @@ export function ContestsCalendar({ events, loading, currentDate, onNavigate, sel
                                 >
                                     {/* Date number */}
                                     <div className="w-5 h-5 flex items-center justify-center rounded-full text-[11px] font-semibold self-start mb-0.5"
-                                         style={{
-                                             fontFamily: 'var(--font-jetbrains-mono), monospace',
-                                             background: todayFlag ? 'var(--today-ring)' : 'transparent',
-                                             color: todayFlag ? '#fff' : inMonth ? 'var(--text-primary)' : 'var(--text-muted)',
-                                         }}>
+                                        style={{
+                                            fontFamily: 'var(--font-jetbrains-mono), monospace',
+                                            background: todayFlag ? 'var(--today-ring)' : 'transparent',
+                                            color: todayFlag ? '#fff' : inMonth ? 'var(--text-primary)' : 'var(--text-muted)',
+                                        }}>
                                         {day.getDate()}
                                     </div>
 
                                     {/* Event labels */}
                                     {visible.map(ev => {
-                                        const color = PLATFORM_DOT[ev.resource] ?? '#6b7280';
-                                        const shortName = ev.resource.split('.')[0];
+                                        const platformMeta = getContestPlatformMeta(ev.resource);
                                         return (
                                             <div key={ev.id}
-                                                 className="flex items-center gap-1 px-1 py-0.5 rounded text-[10px] truncate w-full"
-                                                 style={{ background: `${color}22`, color }}>
-                                                <PlatformIcon resource={ev.resource} className="w-2.5 h-2.5 flex-shrink-0" />
+                                                className="flex items-center gap-1 px-1 py-0.5 rounded text-[10px] truncate w-full"
+                                                style={{ background: `${platformMeta.color}22`, color: platformMeta.color }}>
+                                                <PlatformIcon resource={ev.resource} className="w-2.5 h-2.5 shrink-0" />
                                                 <span className="truncate flex-1 leading-none" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
-                                                    {shortName} · {ev.title.split(' ').slice(0, 3).join(' ')}
+                                                    {platformMeta.label} · {ev.title.split(' ').slice(0, 3).join(' ')}
                                                 </span>
                                             </div>
                                         );
@@ -355,7 +312,7 @@ export function ContestsCalendar({ events, loading, currentDate, onNavigate, sel
                                     {/* Overflow badge */}
                                     {overflow > 0 && (
                                         <div className="text-[10px] font-semibold px-1 mt-auto"
-                                             style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--accent)' }}>
+                                            style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--accent)' }}>
                                             +{overflow} more
                                         </div>
                                     )}

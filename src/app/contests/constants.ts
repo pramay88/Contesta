@@ -1,20 +1,8 @@
-export const SUPPORTED_RESOURCES = [
-    'leetcode.com',
-    'codeforces.com',
-    'codechef.com',
-    'geeksforgeeks.org',
-    'atcoder.jp',
-    'naukri.com/code360',
-];
+import { getPlatformIds, getPlatformOptions, normalizePlatformId, type PlatformIdsForContext } from '@/lib/platforms';
 
-export const PLATFORM_OPTIONS = [
-    { value: 'leetcode.com', label: 'LeetCode' },
-    { value: 'codeforces.com', label: 'Codeforces' },
-    { value: 'codechef.com', label: 'CodeChef' },
-    { value: 'geeksforgeeks.org', label: 'GFG' },
-    { value: 'atcoder.jp', label: 'AtCoder' },
-    { value: 'naukri.com/code360', label: 'Code360' },
-];
+export const SUPPORTED_RESOURCES = getPlatformIds('contest');
+
+export const PLATFORM_OPTIONS = getPlatformOptions('contest');
 
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'mixed' | 'unknown';
 
@@ -33,4 +21,10 @@ export interface Contest {
     difficulty?: DifficultyLevel;
     durationMinutes?: number;
     durationCategory?: DurationCategory;
+}
+
+export type ContestPlatform = PlatformIdsForContext<'contest'>;
+
+export function normalizeContestResource(resource: string): ContestPlatform | null {
+    return normalizePlatformId(resource, 'contest') as ContestPlatform | null;
 }
