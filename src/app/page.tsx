@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Clock3, Layers3, ShieldCheck, Trophy } from "lucide-react";
+import { ArrowRight, Layers3 } from "lucide-react";
 import { SiteFooter } from "@/components/SiteFooter";
 import { PlatformMarquee } from "@/components/PlatformMarquee";
 import { getPlatformOptions } from '@/lib/platforms';
@@ -31,7 +31,6 @@ async function getHomeStats() {
   };
 }
 
-
 export default async function Home() {
   const stats = await getHomeStats();
 
@@ -39,16 +38,18 @@ export default async function Home() {
     <main className="bg-(--bg-page)">
       <div className="mx-auto flex max-w-[1300px] flex-col gap-16 px-4 py-14 md:px-6 lg:py-20">
 
-        {/* Hero — no card, no border. The page background carries it. */}
+        {/* Hero */}
         <section className="text-center">
-          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-(--border) bg-(--bg-card) px-3 py-1 text-xs font-medium text-(--text-secondary)">
-            <Layers3 className="h-3.5 w-3.5 text-(--accent)" />
-            Live across {stats.totalTracked} contest platforms
+          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-lg border border-(--border) bg-(--bg-card) px-3 py-1.5 font-mono text-xs font-medium text-(--text-secondary)">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full motion-safe:animate-ping rounded-full bg-(--accent) opacity-75" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--accent)" />
+            </span>
+            live across {stats.totalTracked} contest platforms
           </div>
 
           <h1 className="mx-auto max-w-3xl text-4xl font-semibold tracking-tight text-(--text-primary) md:text-6xl">
             Never miss a coding contest again.
-            {/* <br className="hidden md:block" /> one clean feed. */}
           </h1>
 
           <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-(--text-secondary) md:text-lg">
@@ -58,23 +59,22 @@ export default async function Home() {
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/contests"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-(--accent) px-5 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02]"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-(--accent) px-5 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02]"
             >
               See upcoming contests <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/about"
-              className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-(--text-primary) transition-colors hover:bg-(--bg-card-hover)"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-(--border) px-5 py-3 text-sm font-semibold text-(--text-primary) transition-colors hover:bg-(--bg-card-hover)"
             >
               How it works
             </Link>
           </div>
         </section>
 
-        {/* Platforms */}
         <PlatformMarquee />
 
-        {/* Stats — one bordered container, hairline dividers, not three separate cards */}
+        {/* Stats */}
         <section className="grid grid-cols-1 divide-y divide-(--border) overflow-hidden rounded-3xl border border-(--border) bg-(--bg-card) sm:grid-cols-3 sm:divide-x sm:divide-y-0">
           <div className="flex flex-col items-center gap-2 px-6 py-8 text-center">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-(--text-muted)">

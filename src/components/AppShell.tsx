@@ -26,8 +26,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <div className="mx-auto flex max-w-[1300px] items-center gap-6 px-4 py-3 md:px-6">
                     <Link href="/" className="flex items-center gap-2">
                         <ContestaLogo className="h-7 w-7 shrink-0" />
-                        <span className="text-[15px] font-semibold tracking-tight text-(--text-primary)">
-                            ContestForge
+                        <span className="font-mono font-bold tracking-tight text-(--text-primary)">
+                            Contest<span className="text-(--accent)">Forge</span>
                         </span>
                     </Link>
 

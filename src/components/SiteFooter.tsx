@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Github, Layers3 } from "lucide-react";
+import { Github } from "lucide-react";
+import { ContestaLogo } from "@/components/ContestaLogo";
 
 const FOOTER_LINKS = [
     { href: "/contests", label: "Contests" },
@@ -12,17 +13,15 @@ const FOOTER_LINKS = [
 
 export function SiteFooter() {
     return (
-        <footer className="border-t" style={{ borderColor: "var(--border)" }}>
+        <footer className="border-t border-(--border)">
             <div className="mx-auto flex max-w-[1300px] flex-col gap-8 px-4 py-14 md:px-0">
                 {/* Brand */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="max-w-sm space-y-3">
                         <div className="flex items-center gap-2">
-                            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-(--accent)/10">
-                                <Layers3 className="h-4 w-4 text-(--accent)" />
-                            </span>
-                            <span className="text-sm font-semibold tracking-tight text-(--text-primary)">
-                                ContestForge
+                            <ContestaLogo className="h-7 w-7" />
+                            <span className="font-mono text-sm font-bold tracking-tight text-(--text-primary)">
+                                Contest<span className="text-(--accent)">Forge</span>
                             </span>
                         </div>
                         <p className="text-sm leading-6 text-(--text-secondary)">
@@ -56,10 +55,10 @@ export function SiteFooter() {
                 </nav>
             </div>
 
-            <div className="border-t" style={{ borderColor: "var(--border)" }}>
-                <div className="mx-auto flex max-w-[1200px] flex-col-reverse items-center gap-3 px-4 py-5 text-xs text-(--text-muted) sm:flex-row sm:justify-between md:px-0">
-                    <span>Built for competitive programmers.</span>
-                    <span className="font-mono">v0.4.2 · 2026-07-15</span>
+            <div className="border-t border-(--border)">
+                <div className="mx-auto flex max-w-[1400px] flex-col-reverse items-center gap-3 px-4 py-5 text-xs text-(--text-muted) sm:flex-row sm:justify-between md:px-0">
+                    <span>© {new Date().getFullYear()} ContestForge. Made for competitive programmers.</span>
+                    <span className="font-mono">v0.4.2 · 2026</span>
                 </div>
             </div>
         </footer>

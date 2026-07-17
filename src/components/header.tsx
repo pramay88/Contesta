@@ -2,7 +2,7 @@
 
 import { ContestaLogo } from '@/components/ContestaLogo';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { BsListUl, BsCalendar3 } from 'react-icons/bs';
+import { CalendarDays, List, Search } from 'lucide-react';
 
 interface HeaderProps {
     search: string;
@@ -11,66 +11,66 @@ interface HeaderProps {
     onMobileViewChange: (v: 'calendar' | 'list') => void;
 }
 
+const MOBILE_VIEWS = [
+    { id: 'calendar', label: 'Calendar view', icon: CalendarDays },
+    { id: 'list', label: 'List view', icon: List },
+] as const;
+
 export function Header({ search, onSearchChange, mobileView, onMobileViewChange }: HeaderProps) {
     return (
-        <header className="sticky top-0 z-40 backdrop-blur-md border-b"
-            style={{ background: 'var(--bg-header)', borderColor: 'var(--border)' }}>
-            <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-3">
-                {/* Single row: logo | spacer | search + theme | mobile toggles */}
-                <div className="flex items-center gap-3">
-                    {/* Logo + name */}
-                    <div className="flex items-center gap-2.5 flex-shrink-0">
-                        <ContestaLogo className="w-9 h-9" />
-                        <h1 className="text-[17px] font-extrabold leading-none tracking-tight"
-                            style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'var(--text-primary)' }}>
-                            Contesta<span style={{ color: '#16a6f9ff' }}>.io</span>
-                        </h1>
-                    </div>
+        <header className="sticky top-0 z-40 border-b border-(--border) bg-(--bg-header) backdrop-blur-md">
+            <div className="mx-auto flex max-w-[1400px] items-center gap-3 px-4 py-3 md:px-6">
+                {/* Brand */}
+                <div className="flex flex-shrink-0 items-center gap-2.5">
+                    <ContestaLogo className="h-9 w-9" />
+                    <h1 className="font-mono text-[17px] font-bold leading-none tracking-tight text-(--text-primary)">
+                        Contesta<span className="text-(--accent)">.io</span>
+                    </h1>
+                </div>
 
-                    {/* Spacer */}
-                    <div className="flex-1" />
+                <div className="flex-1" />
 
-                    {/* Desktop: Search + theme */}
-                    <div className="hidden sm:flex items-center gap-2">
-                        <div className="relative">
-                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                                style={{ color: 'var(--text-muted)' }}>
-                                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                            </svg>
-                            <input
-                                type="text"
-                                placeholder="Search contests..."
-                                value={search}
-                                onChange={e => onSearchChange(e.target.value)}
-                                className="w-52 md:w-64 pl-9 pr-4 py-2 text-xs rounded-xl border outline-none transition-all"
-                                style={{
-                                    fontFamily: 'var(--font-inter), sans-serif',
-                                    background: 'var(--bg-card)',
-                                    borderColor: 'var(--border)',
-                                    color: 'var(--text-primary)',
-                                }}
-                                onFocus={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
-                                onBlur={e => (e.currentTarget.style.borderColor = 'var(--border)')}
-                            />
-                        </div>
-                        <ThemeToggle />
-                    </div>
+                {/* Desktop search + theme */}
+                <div className="hidden items-center gap-2 sm:flex">
+                    <label className="relative block">
+                        <span className="sr-only">Search contests</span>
+                        <Search
+                            className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-(--text-muted)"
+                            strokeWidth={2.5}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Search contests..."
+                            value={search}
+                            onChange={(e) => onSearchChange(e.target.value)}
+                            className="w-52 rounded-lg border border-(--border) bg-(--bg-card) py-2 pl-9 pr-4 text-xs text-(--text-primary) outline-none transition-colors focus:border-(--accent) md:w-64"
+                        />
+                    </label>
+                    <ThemeToggle />
+                </div>
 
-                    {/* Mobile: view toggles + theme */}
-                    <div className="flex sm:hidden items-center gap-1.5">
-                        <ThemeToggle />
-                        {(['calendar', 'list'] as const).map(v => (
-                            <button key={v} onClick={() => onMobileViewChange(v)}
-                                className="p-2 rounded-lg border"
-                                style={{
-                                    background: mobileView === v ? 'var(--accent)' : 'var(--bg-card)',
-                                    borderColor: mobileView === v ? 'var(--accent)' : 'var(--border)',
-                                    color: mobileView === v ? '#fff' : 'var(--text-secondary)',
-                                }}>
-                                {v === 'calendar' ? <BsCalendar3 className="w-3.5 h-3.5" /> : <BsListUl className="w-4 h-4" />}
-                            </button>
-                        ))}
+                {/* Mobile view toggle + theme */}
+                <div className="flex items-center gap-1.5 sm:hidden">
+                    <ThemeToggle />
+                    <div className="flex items-center gap-1 rounded-lg border border-(--border) bg-(--bg-card) p-1">
+                        {MOBILE_VIEWS.map(({ id, label, icon: Icon }) => {
+                            const active = mobileView === id;
+                            return (
+                                <button
+                                    key={id}
+                                    type="button"
+                                    aria-label={label}
+                                    aria-pressed={active}
+                                    onClick={() => onMobileViewChange(id)}
+                                    className={`rounded-md p-1.5 transition-colors ${active
+                                            ? 'bg-(--accent) text-white'
+                                            : 'text-(--text-secondary) hover:bg-(--bg-card-hover)'
+                                        }`}
+                                >
+                                    <Icon className="h-3.5 w-3.5" strokeWidth={2.5} />
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
