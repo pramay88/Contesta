@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { PLATFORM_OPTIONS, DifficultyFilter, DurationFilter } from '@/app/contests/constants';
+import { PLATFORM_OPTIONS, DifficultyFilter } from '@/app/contests/constants';
 import { PlatformIcon } from './PlatformIcon';
 import { SlidersHorizontal, Check, X } from 'lucide-react';
 import { getPlatformColor } from '@/lib/platforms';
@@ -9,8 +9,6 @@ interface PlatformFilterProps {
     onPlatformChange: (platforms: string[]) => void;
     difficultyFilter: DifficultyFilter;
     onDifficultyChange: (value: DifficultyFilter) => void;
-    durationFilter: DurationFilter;
-    onDurationChange: (value: DurationFilter) => void;
     isLoading: boolean;
 }
 
@@ -23,15 +21,7 @@ const DIFFICULTY_OPTIONS: { key: DifficultyFilter; label: string }[] = [
     { key: 'unknown', label: 'Unknown' },
 ];
 
-const DURATION_OPTIONS: { key: DurationFilter; label: string }[] = [
-    { key: 'all', label: 'All Duration' },
-    { key: 'short', label: 'Short (≤2h)' },
-    { key: 'medium', label: 'Medium (2–5h)' },
-    { key: 'long', label: 'Long (>5h)' },
-    { key: 'unknown', label: 'Unknown' },
-];
-
-export function PlatformFilter({ selectedPlatforms, onPlatformChange, difficultyFilter, onDifficultyChange, durationFilter, onDurationChange, isLoading }: PlatformFilterProps) {
+export function PlatformFilter({ selectedPlatforms, onPlatformChange, difficultyFilter, onDifficultyChange, isLoading }: PlatformFilterProps) {
     const [isOpen, setIsOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
@@ -56,10 +46,9 @@ export function PlatformFilter({ selectedPlatforms, onPlatformChange, difficulty
         if (!isLoading) {
             onPlatformChange([]);
             onDifficultyChange('all');
-            onDurationChange('all');
         }
     };
-    const activeCount = selectedPlatforms.length + (difficultyFilter !== 'all' ? 1 : 0) + (durationFilter !== 'all' ? 1 : 0);
+    const activeCount = selectedPlatforms.length + (difficultyFilter !== 'all' ? 1 : 0);
 
     return (
         <div className="relative" ref={ref}>
@@ -151,20 +140,6 @@ export function PlatformFilter({ selectedPlatforms, onPlatformChange, difficulty
                             style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                         >
                             {DIFFICULTY_OPTIONS.map(o => (
-                                <option key={o.key} value={o.key}>{o.label}</option>
-                            ))}
-                        </select>
-
-                        <div className="mt-3 mb-2 text-xs font-bold text-gray-500" style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
-                            Duration
-                        </div>
-                        <select
-                            value={durationFilter}
-                            onChange={(e) => onDurationChange(e.target.value as DurationFilter)}
-                            className="w-full px-2 py-2 text-xs rounded-lg border"
-                            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-                        >
-                            {DURATION_OPTIONS.map(o => (
                                 <option key={o.key} value={o.key}>{o.label}</option>
                             ))}
                         </select>

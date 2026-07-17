@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Layers3 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { SiteFooter } from "@/components/SiteFooter";
 import { PlatformMarquee } from "@/components/PlatformMarquee";
 import { getPlatformOptions } from '@/lib/platforms';

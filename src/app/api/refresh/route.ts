@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { invalidateCache, getContestsCacheKey, getHackathonsCacheKey, getWithSWR, checkRateLimit } from '@/lib/cache';
+import {
+    invalidateCache,
+    getContestsCacheKey,
+    getWithSWR,
+    checkRateLimit,
+} from '@/lib/cache';
 
 // Optional: Add a secret token for security (set CACHE_REFRESH_TOKEN in env)
 const REFRESH_TOKEN = process.env.CACHE_REFRESH_TOKEN;
@@ -13,27 +18,29 @@ function getClientIP(request: NextRequest): string {
     if (forwarded) {
         return forwarded.split(',')[0].trim();
     }
+
     const realIp = request.headers.get('x-real-ip');
     if (realIp) {
         return realIp;
     }
+
     return 'unknown';
 }
 
 /**
  * POST /api/refresh
- * Manually invalidate and rebuild the cache
- * 
+ * Manually invalidate and optionally rebuild the contests cache.
+ *
  * Rate limited: 3 requests per minute per IP
- * 
+ *
  * Query params:
- * - type: 'contests' | 'hackathons' | 'all' (default: 'all')
- * - month: number (for contests, 1-indexed)
- * - year: number (for contests)
- * - rebuild: 'true' to fetch fresh data immediately (default: just invalidate)
- * 
+ * - month: number (1-indexed)
+ * - year: number
+ * - rebuild: 'true' to fetch fresh data immediately
+ *
  * Headers:
- * - Authorization: Bearer <CACHE_REFRESH_TOKEN> (if token is configured, bypasses rate limit)
+ * - Authorization: Bearer <CACHE_REFRESH_TOKEN>
+ *   (if configured, bypasses rate limiting)
  */
 export async function POST(request: NextRequest) {
     try {
@@ -45,7 +52,7 @@ export async function POST(request: NextRequest) {
         // Rate limit check (skip if valid token provided)
         if (!hasValidToken) {
             const rateLimit = await checkRateLimit(clientIP);
-            
+
             if (!rateLimit.allowed) {
                 return NextResponse.json(
                     {
@@ -66,28 +73,19 @@ export async function POST(request: NextRequest) {
         }
 
         const searchParams = request.nextUrl.searchParams;
-        const type = searchParams.get('type') || 'all';
         const monthParam = searchParams.get('month');
         const yearParam = searchParams.get('year');
         const rebuild = searchParams.get('rebuild') === 'true';
 
-        const month = monthParam ? parseInt(monthParam) - 1 : undefined;
-        const year = yearParam ? parseInt(yearParam) : undefined;
+        const month = monthParam ? parseInt(monthParam, 10) - 1 : undefined;
+        const year = yearParam ? parseInt(yearParam, 10) : undefined;
 
-        // Determine which keys to invalidate
-        const keysToInvalidate: string[] = [];
-        
-        if (type === 'contests' || type === 'all') {
-            keysToInvalidate.push(getContestsCacheKey(month, year));
-        }
-        
-        if (type === 'hackathons' || type === 'all') {
-            keysToInvalidate.push(getHackathonsCacheKey());
-        }
+        const cacheKey = getContestsCacheKey(month, year);
 
         // Invalidate cache
-        const invalidated = await invalidateCache(keysToInvalidate);
-        console.log(`Invalidated ${invalidated} cache entries for keys:`, keysToInvalidate);
+        const invalidated = await invalidateCache([cacheKey]);
+
+        console.log(`Invalidated ${invalidated} cache entries for key: ${cacheKey}`);
 
         const result: {
             success: boolean;
@@ -98,36 +96,21 @@ export async function POST(request: NextRequest) {
         } = {
             success: true,
             invalidated,
-            keys: keysToInvalidate,
+            keys: [cacheKey],
             timestamp: new Date().toISOString(),
         };
 
         // Optionally rebuild cache immediately
         if (rebuild) {
-            const rebuilt: string[] = [];
-            
-            if (type === 'contests' || type === 'all') {
-                // Dynamic import to avoid circular dependency
-                const { fetchContestsData } = await import('../contests/route');
-                await getWithSWR(
-                    getContestsCacheKey(month, year),
-                    () => fetchContestsData(month, year),
-                    { forceFresh: true }
-                );
-                rebuilt.push('contests');
-            }
-            
-            if (type === 'hackathons' || type === 'all') {
-                const { fetchHackathonsData } = await import('../hackathons/route');
-                await getWithSWR(
-                    getHackathonsCacheKey(),
-                    fetchHackathonsData,
-                    { forceFresh: true }
-                );
-                rebuilt.push('hackathons');
-            }
-            
-            result.rebuilt = rebuilt;
+            const { fetchContestsData } = await import('../contests/route');
+
+            await getWithSWR(
+                cacheKey,
+                () => fetchContestsData(month, year),
+                { forceFresh: true }
+            );
+
+            result.rebuilt = ['contests'];
         }
 
         return NextResponse.json(result, {
@@ -137,6 +120,7 @@ export async function POST(request: NextRequest) {
         });
     } catch (error) {
         console.error('Refresh API error:', error);
+
         return NextResponse.json(
             {
                 error: 'Failed to refresh cache',
@@ -149,9 +133,15 @@ export async function POST(request: NextRequest) {
 
 // Also support GET for simple invalidation (no rebuild)
 export async function GET(request: NextRequest) {
-    // Redirect to POST behavior but without rebuild
     const url = new URL(request.url);
-    url.searchParams.delete('rebuild'); // Ensure no rebuild on GET
-    
-    return POST(new NextRequest(url, { method: 'POST', headers: request.headers }));
+
+    // Ensure GET never triggers a rebuild
+    url.searchParams.delete('rebuild');
+
+    return POST(
+        new NextRequest(url, {
+            method: 'POST',
+            headers: request.headers,
+        })
+    );
 }

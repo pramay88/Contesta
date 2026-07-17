@@ -8,8 +8,6 @@ import { SkeletonDateGroup } from './SkeletonLoaders';
 type FilterType = 'all' | 'today' | 'week' | 'month';
 
 interface ContestsSidebarProps {
-    search: string;
-    onSearchChange: (value: string) => void;
     upcomingContests: Contest[];
     loading: boolean;
     error: string;
@@ -69,8 +67,6 @@ function getFilteredContests(contests: Contest[], filter: FilterType): Contest[]
 }
 
 export function ContestsSidebar({
-    search,
-    onSearchChange,
     upcomingContests,
     loading,
     error,
@@ -117,9 +113,14 @@ export function ContestsSidebar({
                             key={filter.key}
                             className="flex-1"
                             badgeContent={filterCounts[filter.key]}
-                            color="primary"
                             overlap="rectangular"
                             anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                            sx={{
+                                '& .MuiBadge-badge': {
+                                    backgroundColor: 'var(--accent)',
+                                    color: '#fff',
+                                },
+                            }}
                         >
                             <button
                                 type="button"

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { LayoutGrid, List, Maximize2, Minimize2, RefreshCw, Search } from 'lucide-react';
 import { PlatformFilter } from '@/components/PlatformFilter';
 import { ContestsSidebar } from '@/components/ContestsSidebar';
@@ -20,8 +20,6 @@ export default function ContestsPage() {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [contestFilter, setContestFilter] = useState<FilterType>('all');
     const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('all');
-    const [durationFilter, setDurationFilter] = useState<DurationFilter>('all');
-    const [sortBy, setSortBy] = useState<SortType>('soonest');
     const [mobileView, setMobileView] = useState<ViewMode>('both');
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -40,30 +38,7 @@ export default function ContestsPage() {
         allCalendarEvents,
         refreshContests,
         refreshState,
-    } = useContests(currentDate, difficultyFilter, durationFilter);
-
-    const sortedContests = useMemo(() => {
-        const sorted = [...upcomingContests];
-
-        sorted.sort((a, b) => {
-            const startA = new Date(a.start).getTime();
-            const startB = new Date(b.start).getTime();
-            const durationA = a.durationMinutes ?? 0;
-            const durationB = b.durationMinutes ?? 0;
-
-            if (sortBy === 'latest') {
-                return startB - startA;
-            }
-
-            if (sortBy === 'duration') {
-                return durationA - durationB;
-            }
-
-            return startA - startB;
-        });
-
-        return sorted;
-    }, [upcomingContests, sortBy]);
+    } = useContests(currentDate, difficultyFilter);
 
     const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
         const clicked = new Date(slotInfo.start); clicked.setHours(0, 0, 0, 0);
@@ -205,9 +180,7 @@ export default function ContestsPage() {
                                 style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}
                             >
                                 <ContestsSidebar
-                                    search={search}
-                                    onSearchChange={setSearch}
-                                    upcomingContests={sortedContests}
+                                    upcomingContests={upcomingContests}
                                     loading={loading}
                                     error={error}
                                     currentFilter={contestFilter}
@@ -238,8 +211,6 @@ export default function ContestsPage() {
                             onPlatformChange={setSelectedPlatforms}
                             difficultyFilter={difficultyFilter}
                             onDifficultyChange={setDifficultyFilter}
-                            durationFilter={durationFilter}
-                            onDurationChange={setDurationFilter}
                             isLoading={loading || isFetching}
                         />
                     </div>

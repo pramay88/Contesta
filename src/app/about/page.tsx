@@ -1,37 +1,6 @@
 import Link from 'next/link';
 import { AppSection } from '@/components/AppSection';
-import { PlatformMarquee } from '@/components/PlatformMarquee';
 import { SiteFooter } from '@/components/SiteFooter';
-
-const FAQS = [
-    {
-        question: 'How does Contesta.io get its contest data?',
-        answer: "It pulls from each platform's public contest feed and normalizes the mess into one consistent schema — because every platform formats dates like it's the only platform that exists.",
-    },
-    {
-        question: 'Do I need an account?',
-        answer: "No. The core feed is public. If a product makes you sign up before showing you anything, that's not a login wall, that's a bounce generator.",
-    },
-    {
-        question: "Why isn't my favorite platform listed yet?",
-        answer: "Probably because I haven't gotten to it, not because I forgot it exists. Tell me on the contact page and it moves up the queue.",
-    },
-    {
-        question: 'Is this going to turn into a bloated dashboard?',
-        answer: "The roadmap adds reminders and profiles, not fourteen sidebar items you'll never click. Contests stay the center of gravity.",
-    },
-] as const;
-
-const CREDITS = [
-    'Codeforces',
-    'LeetCode',
-    'AtCoder',
-    'CodeChef',
-    'HackerRank',
-    'HackerEarth',
-    'TopCoder',
-    'Kaggle',
-] as const;
 
 export default function AboutPage() {
     return (

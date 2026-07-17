@@ -9,11 +9,11 @@ export default function ContactPage() {
                 <div className="flex flex-col items-center gap-10">
                     <section className="max-w-2xl space-y-3 text-center">
                         <h1 className="text-3xl font-semibold tracking-tight text-(--text-primary) md:text-4xl">
-                            We'd love to hear from you.
+                            We&apos;d love to hear from you.
                         </h1>
 
                         <p className="text-base leading-7 text-(--text-secondary)">
-                            Have a question, found a bug, want to suggest a feature. Send us a message and we'll
+                            Have a question, found a bug, want to suggest a feature. Send us a message and we&apos;ll
                             get back to you as soon as possible.
                         </p>
                     </section>
