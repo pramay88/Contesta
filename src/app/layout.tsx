@@ -17,18 +17,70 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ContestForge",
+  metadataBase: new URL("https://contestx.vercel.app"),
+
+  title: {
+    default: "ContestX - Coding Contest Tracker",
+    template: "%s | ContestX",
+  },
+
   description:
-    "A clean, startup-quality feed for upcoming coding contests, platform stats, and calendar planning.",
-  icons: {
-    icon: "/contesta-logo.png",
+    "Track upcoming programming contests from Codeforces, LeetCode, CodeChef, AtCoder, HackerRank, HackerEarth, and more. Never miss a coding contest again.",
+
+  keywords: [
+    "coding contests",
+    "competitive programming",
+    "contest tracker",
+    "Codeforces contests",
+    "LeetCode contests",
+    "AtCoder contests",
+    "CodeChef contests",
+    "HackerRank",
+    "HackerEarth",
+    "ContestX",
+  ],
+
+  alternates: {
+    canonical: "/",
   },
+
   openGraph: {
-    title: "ContestForge",
-    description: "A clean, startup-quality feed for upcoming coding contests.",
+    title: "ContestX - Coding Contest Tracker",
+    description:
+      "Track coding contests from Codeforces, LeetCode, CodeChef, AtCoder and more.",
+    url: "https://contestx.vercel.app",
+    siteName: "ContestX",
+    locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ContestX",
+      },
+    ],
   },
-  metadataBase: new URL("https://contestforge.app"),
+
+  twitter: {
+    card: "summary_large_image",
+    title: "ContestX",
+    description:
+      "Upcoming coding contests from multiple platforms.",
+    images: ["/og-image.png"],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -36,10 +88,38 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "ContestX",
+    url: "https://contestx.vercel.app",
+    description:
+      "Track upcoming programming contests from Codeforces, LeetCode, CodeChef, AtCoder and more.",
+    inLanguage: "en",
+    publisher: {
+      "@type": "Organization",
+      name: "ContestX",
+      url: "https://contestx.vercel.app",
+    },
+  };
+  const organization = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "ContestX",
+    url: "https://contestx.vercel.app",
+    logo: "https://contestx.vercel.app/logo.png",
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
         <AppShell>{children}</AppShell>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([jsonLd, organization]),
+          }}
+        />
         <Analytics />
       </body>
     </html>

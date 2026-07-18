@@ -53,7 +53,7 @@ export default async function Home() {
           </h1>
 
           <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-(--text-secondary) md:text-lg">
-            Discover, track, and join coding contests from all major competitive programming platforms—all in one place.
+            Discover, track, and join coding contests from all major competitive programming platforms.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">

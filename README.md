@@ -1,34 +1,45 @@
-It allows you to view upcoming programming contests from multiple platforms, add them to your calendar, and stay organized so you never miss a competition.
+# ContestStack
+
+ContestStack helps you keep track of upcoming programming contests from popular competitive programming platforms in one place.
+
+You can:
+
+* 📅 View upcoming contests
+* 🔍 Filter contests by platform and difficulty
+* 🗓️ Add contests to your calendar
+* ⏰ Stay organized and never miss a competition
+
+## Supported Platforms
+
+* LeetCode
+* Codeforces
+* CodeChef
+* AtCoder
+* GeeksforGeeks (GFG)
+* Coding Ninjas
+* HackerEarth
+* HackerRank
 
 
-Supports LeetCode, Codeforces, CodeChef, AtCoder, GFG and more.
+## Live Demo
 
+* https://conteststack.vercel.app/contests
+* https://contests-io.vercel.app/contests
 
-https://contests-io.vercel.app/contests
-https://conteststack.vercel.app/contests
+## API
 
-## Environment Variables
+* `GET /api/contests?month=4&year=2026` — Retrieve upcoming contests.
+* `POST /api/refresh?rebuild=true` — Refresh the contests cache.
 
-Required for contest data:
-- `CLIST_API_USERNAME` - Your clist.by API username
-- `CLIST_API_KEY` - Your clist.by API key
+## Tech Stack
 
-Required for caching (Upstash Redis):
-- `UPSTASH_REDIS_REST_URL` - Upstash Redis REST URL
-- `UPSTASH_REDIS_REST_TOKEN` - Upstash Redis REST token
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
+* Material UI
+* Upstash Redis
 
-Optional:
-- `CACHE_REFRESH_TOKEN` - Secret token for `/api/refresh` endpoint (recommended for production)
+## License
 
-## API Endpoints
-
-- `GET /api/contests?month=4&year=2026` - Get contests (cached with SWR)
-- `GET /api/hackathons` - Get hackathons (cached with SWR)
-- `POST /api/refresh?type=all&rebuild=true` - Manually invalidate and rebuild cache
-
-## Caching
-
-Uses Upstash Redis with stale-while-revalidate (SWR) strategy:
-- Fresh data: 15 minutes TTL
-- Stale window: 5 minutes (returns stale data while refreshing in background)
-- Cache headers indicate source and staleness via `X-Cache-Source` and `X-Cache-Stale`
+MIT
