@@ -136,6 +136,8 @@ export default function RootLayout({
             __html: JSON.stringify([jsonLd, organization]),
           }}
         />
+        {/* Umami */}
+        <script defer src="https://glitch-umami.vercel.app/script.js" data-website-id="ec93707d-1b51-4f61-a5bf-62ae19804c4d"></script>
         <Analytics />
       </body>
     </html>
