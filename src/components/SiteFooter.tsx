@@ -19,9 +19,9 @@ export function SiteFooter() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="max-w-sm space-y-3">
                         <div className="flex items-center gap-2">
-                            <ContestaLogo className="h-7 w-7" />
+                            <ContestaLogo className="h-6 w-6" />
                             <span className="font-mono text-sm font-bold tracking-tight text-(--text-primary)">
-                                Contest<span className="text-(--accent)">Forge</span>
+                                Contest<span className="text-(--accent)">X</span>
                             </span>
                         </div>
                         <p className="text-sm leading-6 text-(--text-secondary)">
